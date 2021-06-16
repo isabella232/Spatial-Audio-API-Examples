@@ -51,6 +51,7 @@ class Bot {
         this.stopped = new Promise(resolve => this.resolve = resolve);
     }
     updatePosition(position) {
+        if (this.shutdown) return;
         position = new Point3D(position);
         this.communicator.updateUserDataAndTransmit({position});
         return position;
@@ -59,10 +60,12 @@ class Bot {
         return new OrientationEuler3D(options);
     }
     updateOrientation(orientationEuler) {
+        if (this.shutdown) return;
         orientationEuler = this.makeEuler(orientationEuler);
         this.communicator.updateUserDataAndTransmit({orientationEuler});
     }
     updateGain(hiFiGain) {
+        if (this.shutdown) return;
         this.communicator.updateUserDataAndTransmit({hiFiGain});
     }
     log(...data) {
@@ -96,6 +99,7 @@ class Bot {
         this.audioMixerUserID = response.audionetInitResponse.id;
     }
     async start() {
+        this.shutdown = false;
         this.source && await this.startSource();
         await this.connect();
         await this.startSink(); // After connect, because communicator doesn't have an output stream until then.
@@ -105,6 +109,7 @@ class Bot {
         this.runtimeSeconds && setTimeout(() => this.stop(), this.runtimeSeconds * 1000);
     }
     async stop() {
+        this.shutdown = true;
         this.log('stopping');
         let reports = await this.stopMeasurement();
         reports && this.log(`nBytes ${reports.measured.bytesSent} => ${reports.measured.bytesReceived}`);
@@ -112,6 +117,7 @@ class Bot {
         this.sink.stop();
         this.source && this.source.pause();
         this.motor && this.motor.stop();
+        this.shutdownSeconds && await new Promise(resolve => setTimeout(resolve, this.shutdownSeconds * 1000));
         this.log('finished');
         // Node will normally exit when nothing is left to run. However, wrtc RTCPeerConnection doesn't
         // ever stop once it is instantiated, so node won't end on its own. To work around this,
