@@ -1,4 +1,4 @@
-const Version = "g.1.22";
+const Version = "g.1.25";
 // Provide publish/subscribe communications with others. This could be to a server, p2p, etc.
 // Using a pub/sub discipline is up to the application, but it happens to work well here.
 class Client extends Croquet.View {
@@ -7,9 +7,9 @@ class Client extends Croquet.View {
     }
 }
 class Avatar extends Client {
-    constructor(options) {
-        super();
-        let {room, model, streamingAvatarId=''} = options,
+    constructor(model, options) {
+        super(model);
+        let {room, streamingAvatarId=''} = options,
             streamingAvatar = room.avatars[streamingAvatarId],
             fragment = avatarTemplate.content.cloneNode(true);
         // Capture a bunch of named elements within the cloned fragment.
@@ -243,8 +243,8 @@ Avatar.baseRadius = 50; // Safari doesn't allow `static var = val;` syntax in cl
 Avatar.domAvatars = new WeakMap(); // Map of avatar elements back to Avatar Client objects.
 
 class MyAvatar extends Avatar {
-    constructor(...parameters) {
-        super(...parameters);
+    constructor(model, ...parameters) {
+        super(model, ...parameters);
         this.enableSelfLabel(true);
         this.makeDraggable();
         this.domButton.classList.remove('disabled');
@@ -396,7 +396,7 @@ class Room extends Client {
             // Croquet-specific: All View objects have viewId set to the sessionAvatarId of this browser.
             isOurs = sessionAvatarId === this.viewId,
             kind = isOurs ? MyAvatar : Avatar,
-            avatar = new kind({room:this, model, ...options});
+            avatar = new kind(model, {room:this, ...options});
         if (isOurs) Avatar.mine = avatar;
         this.avatars[sessionAvatarId] = avatar;
         this.avatarsByName[avatar.hifiUserId] = avatar;
