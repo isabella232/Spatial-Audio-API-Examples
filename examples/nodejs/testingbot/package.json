@@ -25,6 +25,7 @@
     "hifi-spatial-audio": "*",
     "jose": "^3.9.0",
     "make-fetch-happen": "^8.0.13",
+    "node-fetch": "^2.6.1",
     "pcm-convert": "^1.6.5",
     "wrtc": "^0.4.7",
     "yargs": "^16.2.0"

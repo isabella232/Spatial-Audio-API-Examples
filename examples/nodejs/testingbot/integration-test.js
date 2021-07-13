@@ -13,6 +13,7 @@ const defaults = {
     name: 'Bot #',
     serverShouldSendUserData: true,
     runtimeSeconds: 0,
+    shutdownSeconds: 0,
     measure: '',
     jwt: '',
     app_id: '', space_id: '', stackName: '',  // Edit in your own values here.
@@ -88,6 +89,11 @@ const argv = yargs
       .options('runtimeSeconds', {
           alias: 'r',
           describe: describe('How long should each bot run AFTER at it has completely started, or falsy to keep going indefinitely', 'runtimeSeconds'),
+          type: 'array'
+      })
+      .options('shutdownSeconds', {
+          alias: 'q',
+          describe: describe('How long should each bot run AFTER at it has disconnected, to allow for asynchronous statechange handlers to complete.', 'shutdownSeconds'),
           type: 'array'
       })
       .options('measure', {
