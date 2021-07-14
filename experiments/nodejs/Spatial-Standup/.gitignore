@@ -1,3 +1,4 @@
 auth.json
 out/
 src/server/dist
+dist-server/

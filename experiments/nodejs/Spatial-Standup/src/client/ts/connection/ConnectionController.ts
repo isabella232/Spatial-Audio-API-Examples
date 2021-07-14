@@ -29,7 +29,11 @@ export class ConnectionController {
         this.hifiCommunicator = new HiFiCommunicator({
             transmitRateLimitTimeoutMS: 10,
             onUsersDisconnected: this.onUsersDisconnected,
-            userDataStreamingScope: HiFiUserDataStreamingScopes.All
+            userDataStreamingScope: HiFiUserDataStreamingScopes.All,
+            connectionRetryAndTimeoutConfig: {
+                autoRetryInitialConnection: true,
+                autoRetryOnDisconnect: true
+            },
         });
 
         window.addEventListener('beforeunload', this.shutdown.bind(this));
