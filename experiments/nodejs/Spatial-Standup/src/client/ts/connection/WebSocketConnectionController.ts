@@ -129,6 +129,12 @@ export class WebSocketConnectionController {
                     if (isStreamingVideo !== undefined) {
                         localUserData.isStreamingVideo = isStreamingVideo;
 
+                        // If we're watching someone's screenshare full screen, and that person stops
+                        // sharing their screen, hide the full-screen screenshare UI.
+                        if (localUserData.isStreamingVideo !== VideoStreamingStates.SCREENSHARE && uiController.screenShareContainer.querySelector(`#${localUserData.providedUserID}`)) {
+                            uiController.hideScreenShareUI();
+                        }
+
                         if (localUserData.isStreamingVideo !== VideoStreamingStates.NONE && !videoController.twilioRoom && !videoController.connectingToTwilio) {
                             console.log("At least one user in this Room is streaming video. Connecting to Twilio...");
                             videoController.connectToTwilio();

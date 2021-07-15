@@ -1,6 +1,6 @@
 import '../../css/screenShare.scss';
 import * as Video from 'twilio-video';
-import { avDevicesController, uiThemeController, userDataController, webSocketConnectionController } from '..';
+import { avDevicesController, uiController, uiThemeController, userDataController, webSocketConnectionController } from '..';
 import { VideoStreamingStates } from "../../../shared/shared";
 
 declare var HIFI_SPACE_NAME: string;
@@ -140,6 +140,12 @@ export class VideoController {
 
     disableVideoOrScreenSharing() {
         console.log("Disabling local video...");
+
+        // If we're watching our own screenshare full screen, and we stop
+        // sharing our screen, hide the full-screen screenshare UI.
+        if (uiController.screenShareContainer.querySelector(`#${userDataController.myAvatar.myUserData.providedUserID}`)) {
+            uiController.hideScreenShareUI();
+        }
 
         this.twilioRoom.localParticipant.unpublishTrack(this.localVideoTrack);
         this.localVideoTrack.stop();
