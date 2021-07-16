@@ -162,6 +162,7 @@
             // Volume data can be used to render a sound bubble effect on the node
             updateReceivedData(data) {
                 this.volume = data.volumeDecibels !== null ? data.volumeDecibels : this.volume;
+                this.volume = this.volume < -120 ? -120 : this.volume;
             }
             // Notify connection changes for debugging
             onConnectionStateChanged(newConnectionState) {
@@ -255,6 +256,7 @@
                 }
                 let loadAudioFile = new Promise(resolve => {
                     let audioElem = document.createElement('audio');
+                    audioElem.crossOrigin = "anonymous";
                     audioElem.setAttribute('src', filename);
                     audioElem.addEventListener("loadeddata", (e) => {
                         resolve(e.target);
@@ -415,7 +417,7 @@
                         case SoundNodeType.EMITTER:
                             node = new Speaker(nodeData[i], this.config.TRACKS_GAIN); // Create Speaker
                             // Prepare the audio file
-                            node.prepareAudioFile(`./audio/${nodeData[i].name}.mp3`, () => { 
+                            node.prepareAudioFile(`https://hifi-spatial-audio-api.s3.us-west-2.amazonaws.com/examples/tracks/audio/${nodeData[i].name}.mp3`, () => { 
                                 this.checkAllFinishedAndReplay(); // When 'ended' event is fired we check that all emitters are done before replay
                             });
                             // Set the emmiter position around the listener
@@ -585,7 +587,7 @@
         HighFidelityAudio.HiFiLogger.setHiFiLogLevel(HighFidelityAudio.HiFiLogLevel.Debug);
         let APP_CONFIG = {
             SPAWN_POINT : {x: 0, y: 0, z: 0}, // Initial position for the receiver
-            TRACKS_GAIN : 0.4, // The volume sent for all tracks
+            TRACKS_GAIN : 0.1, // The volume sent for all tracks
             EMITTER_RADIUS: 0.185, // Radius of the speakers
             RECEIVER_RADIUS: 0.15 // Radius of the listener
         }
