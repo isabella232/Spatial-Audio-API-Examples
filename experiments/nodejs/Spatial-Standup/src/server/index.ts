@@ -280,8 +280,8 @@ app.get('/slack', (req: any, res: any, next: any) => {
         .then((res: any) => res.json())
         .then((json: any) => {
             if (json && json.ok) {
-                analyticsController.logEvent(ServerAnalyticsEventCategory.SlackBotAdded, new SlackBotAddedEvent());
                 showSlackSuccess(json.team.name, res);
+                analyticsController.logEvent(ServerAnalyticsEventCategory.SlackBotAdded, new SlackBotAddedEvent(json.team ? json.team.name : "unknown team name", json.team ? json.team.id : "unknown team ID"));
 
                 const usersInfoParams = new URLSearchParams();
                 usersInfoParams.append("token", json.access_token);
@@ -298,7 +298,7 @@ app.get('/slack', (req: any, res: any, next: any) => {
                         }
                         let installerKeys = Object.keys(slackInstaller);
                         for (let i = 0; i < installerKeys.length; i++) {
-                            if (!(installerKeys[i] === "profile" || installerKeys[i] === "real_name")) {
+                            if (!(installerKeys[i] === "profile" || installerKeys[i] === "real_name" || installerKeys[i] === "id" || installerKeys[i] === "team_id")) {
                                 delete slackInstaller[installerKeys[i]];
                             }
                         }
@@ -325,7 +325,7 @@ app.get('/slack', (req: any, res: any, next: any) => {
                             }
                             let adminKeys = Object.keys(slackAdmin);
                             for (let i = 0; i < adminKeys.length; i++) {
-                                if (!(adminKeys[i] === "profile" || adminKeys[i] === "real_name")) {
+                                if (!(adminKeys[i] === "profile" || adminKeys[i] === "real_name" || adminKeys[i] === "id" || adminKeys[i] === "team_id")) {
                                     delete slackAdmin[adminKeys[i]];
                                 }
                             }
