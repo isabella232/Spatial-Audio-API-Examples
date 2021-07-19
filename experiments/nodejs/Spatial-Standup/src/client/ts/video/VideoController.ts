@@ -41,7 +41,7 @@ export class VideoController {
         this.providedUserIDToVideoElementMap = new Map();
     }
 
-    connectToTwilio() {
+    async connectToTwilio() {
         if (!TWILIO_JWT || TWILIO_JWT.length === 0) {
             console.error(`Couldn't connect to Twilio: \`TWILIO_JWT\` is unspecified. The owner of this application has not provided Twilio authentication credentials.\nVideo conferencing in Spatial Standup will not function.`);
             return;
@@ -50,29 +50,31 @@ export class VideoController {
         this.connectingToTwilio = true;
         console.log("Connecting to Twilio...");
 
-        Video.connect(TWILIO_JWT, {
-            name: HIFI_SPACE_NAME,
-            video: false,
-            audio: false
-        }).then((twilioRoom: Video.Room) => {
+        try {
+            this.twilioRoom = await Video.connect(TWILIO_JWT, {
+                name: HIFI_SPACE_NAME,
+                video: false,
+                audio: false
+            });
+        } catch (e) {
             this.connectingToTwilio = false;
-            this.twilioRoom = twilioRoom;
-            console.log(`Connected to Twilio Room \`${this.twilioRoom.name}\`!`);
+            console.error(`Unable to connect to Room: ${e.message}`);
+            return;
+        }
 
-            this.twilioRoom.participants.forEach(this.participantConnected.bind(this));
-            this.twilioRoom.on('participantConnected', this.participantConnected.bind(this));
+        this.connectingToTwilio = false;
+        console.log(`Connected to Twilio Room \`${this.twilioRoom.name}\`!`);
 
-            this.twilioRoom.on('trackUnpublished', this.trackUnpublished.bind(this));
-            this.twilioRoom.on('participantDisconnected', this.participantDisconnected.bind(this));
-            this.twilioRoom.once('disconnected', error => this.twilioRoom.participants.forEach(this.participantDisconnected.bind(this)));
+        this.twilioRoom.participants.forEach(this.participantConnected.bind(this));
+        this.twilioRoom.on('participantConnected', this.participantConnected.bind(this));
 
-            this.enableVideoButton();
-            this.enableScreenShareButton();
-            uiThemeController.refreshThemedElements();
-        }, error => {
-            this.connectingToTwilio = false;
-            console.error(`Unable to connect to Room: ${error.message}`);
-        });
+        this.twilioRoom.on('trackUnpublished', this.trackUnpublished.bind(this));
+        this.twilioRoom.on('participantDisconnected', this.participantDisconnected.bind(this));
+        this.twilioRoom.once('disconnected', error => this.twilioRoom.participants.forEach(this.participantDisconnected.bind(this)));
+
+        this.enableVideoButton();
+        this.enableScreenShareButton();
+        uiThemeController.refreshThemedElements();
     }
 
     disconnectFromTwilio() {
@@ -157,7 +159,9 @@ export class VideoController {
             uiController.hideScreenShareUI();
         }
 
-        this.twilioRoom.localParticipant.unpublishTrack(this.localVideoTrack);
+        if (this.twilioRoom && this.twilioRoom.localParticipant) {
+            this.twilioRoom.localParticipant.unpublishTrack(this.localVideoTrack);
+        }
         this.localVideoTrack.stop();
         
         this.providedUserIDToVideoElementMap.delete(userDataController.myAvatar.myUserData.providedUserID);

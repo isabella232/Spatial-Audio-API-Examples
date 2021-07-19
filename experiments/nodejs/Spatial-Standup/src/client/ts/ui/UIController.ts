@@ -417,7 +417,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
             },
             "Audio": {
                 "Toggle Mic Mute": ["M"],
-                "Push to Talk": ["Spacebar"],
+                "Push to Talk": ["Space Bar"],
             },
             "Interface": {
                 "Zoom Out": ["-"],
