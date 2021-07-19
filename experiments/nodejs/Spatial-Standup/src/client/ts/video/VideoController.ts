@@ -32,9 +32,11 @@ export class VideoController {
         this.screenShareIsMuted = true;
 
         this.toggleScreenShareButton = document.querySelector('.toggleScreenShareButton');
-        this.toggleScreenShareButton.addEventListener("click", async (e) => {
-            await this.toggleScreenShare();
-        });
+        if (this.toggleScreenShareButton) {
+            this.toggleScreenShareButton.addEventListener("click", async (e) => {
+                await this.toggleScreenShare();
+            });
+        }
 
         this.providedUserIDToVideoElementMap = new Map();
     }
@@ -112,6 +114,10 @@ export class VideoController {
     }
 
     disableScreenShareButton() {
+        if (!this.toggleScreenShareButton) {
+            return;
+        }
+
         this.toggleScreenShareButton.classList.remove("toggleScreenShareButton--muted");
         uiThemeController.clearThemesFromElement(<HTMLElement>this.toggleScreenShareButton, 'toggleScreenShareButton--unmuted', false);
         uiThemeController.clearThemesFromElement(<HTMLElement>this.toggleScreenShareButton, 'toggleScreenShareButton--muted', false);
@@ -120,6 +126,10 @@ export class VideoController {
     }
 
     enableScreenShareButton() {
+        if (!this.toggleScreenShareButton) {
+            return;
+        }
+
         this.toggleScreenShareButton.classList.remove("toggleScreenShareButton--disabled");
         uiThemeController.clearThemesFromElement(<HTMLElement>this.toggleScreenShareButton, 'toggleScreenShareButton--disabled', false);
         if (this.screenShareIsMuted) {
@@ -169,7 +179,7 @@ export class VideoController {
             this.videoIsMuted = true;
         }
 
-        if (!this.screenShareIsMuted) {
+        if (!this.screenShareIsMuted && this.toggleScreenShareButton) {
             this.toggleScreenShareButton.classList.add("toggleScreenShareButton--muted");
             this.toggleScreenShareButton.classList.remove("toggleScreenShareButton--unmuted");
             this.toggleScreenShareButton.setAttribute("aria-label", "Start Sharing your Screen");
@@ -262,11 +272,13 @@ export class VideoController {
         userDataController.myAvatar.myUserData.isStreamingVideo = VideoStreamingStates.SCREENSHARE;
         this.finishVideoSetup();
         
-        this.toggleScreenShareButton.classList.remove("toggleScreenShareButton--muted");
-        uiThemeController.clearThemesFromElement(<HTMLElement>this.toggleScreenShareButton, 'toggleScreenShareButton--muted', false);
-        this.toggleScreenShareButton.classList.add("toggleScreenShareButton--unmuted");
-        uiThemeController.refreshThemedElements();
-        this.toggleScreenShareButton.setAttribute("aria-label", "Stop Sharing your Screen");
+        if (this.toggleScreenShareButton) {
+            this.toggleScreenShareButton.classList.remove("toggleScreenShareButton--muted");
+            uiThemeController.clearThemesFromElement(<HTMLElement>this.toggleScreenShareButton, 'toggleScreenShareButton--muted', false);
+            this.toggleScreenShareButton.classList.add("toggleScreenShareButton--unmuted");
+            uiThemeController.refreshThemedElements();
+            this.toggleScreenShareButton.setAttribute("aria-label", "Stop Sharing your Screen");
+        }
 
         this.screenShareIsMuted = false;
     }
