@@ -88,7 +88,10 @@ export class ServerAnalyticsController {
             this.connectToDB();
         }
 
-        if (!(googleServiceAccountCreds && googleServiceAccountCreds.client_email && googleServiceAccountCreds.private_key)) {
+        if (!(auth.ANALYTICS_GOOGLE_SHEET_ID && auth.ANALYTICS_GOOGLE_SHEET_ID.length > 0)) {
+            this.googleJWTClientAuthorizationFailed = true;
+            console.warn(`No \`auth.ANALYTICS_GOOGLE_SHEET_ID\`! Analytics will not be logged to Google Sheets.`);
+        } else if (!(googleServiceAccountCreds && googleServiceAccountCreds.client_email && googleServiceAccountCreds.private_key)) {
             this.googleJWTClientAuthorizationFailed = true;
             console.warn(`No "googleServiceAccountCreds"! Analytics will not be logged to Google Sheets.`);
         } else {

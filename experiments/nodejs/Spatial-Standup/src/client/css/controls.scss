@@ -282,6 +282,7 @@ $bottom-controls-container-height: 72px;
     padding: 0;
     margin: 0 8px;
     position: relative;
+    flex: 0 1 32px;
 }
 
 .toggleInputMuteButton {
@@ -313,6 +314,7 @@ $bottom-controls-container-height: 72px;
                 filter: saturate(0) blur(0);
                 opacity: 0;
                 transition: .1s ease-in-out;
+                flex: 0 1 36px;
             }
 
             &:hover:before, &:focus:before {
@@ -354,6 +356,7 @@ $bottom-controls-container-height: 72px;
                 opacity: 0;
                 transition: .1s ease-in-out;
                 z-index: -1;
+                flex: 0 1 36px;
             }
 
             &:hover:before, &:focus:before {
@@ -396,6 +399,7 @@ $bottom-controls-container-height: 72px;
                 filter: saturate(0) blur(0);
                 opacity: 0;
                 transition: .1s ease-in-out;
+                flex: 0 1 36px;
             }
 
             &:hover:before, &:focus:before {
@@ -437,6 +441,7 @@ $bottom-controls-container-height: 72px;
                 opacity: 0;
                 transition: .1s ease-in-out;
                 z-index: -1;
+                flex: 0 1 36px;
             }
 
             &:hover:before, &:focus:before {
@@ -491,6 +496,7 @@ $bottom-controls-container-height: 72px;
                 filter: saturate(0) blur(0);
                 opacity: 0;
                 transition: .1s ease-in-out;
+                flex: 0 1 36px;
             }
 
             &:hover:before, &:focus:before {
@@ -532,6 +538,7 @@ $bottom-controls-container-height: 72px;
                 opacity: 0;
                 transition: .1s ease-in-out;
                 z-index: -1;
+                flex: 0 1 36px;
             }
 
             &:hover:before, &:focus:before {
@@ -586,6 +593,7 @@ $bottom-controls-container-height: 72px;
                 filter: saturate(0) blur(0);
                 opacity: 0;
                 transition: .1s ease-in-out;
+                flex: 0 1 36px;
             }
 
             &:hover:before, &:focus:before {
@@ -627,6 +635,7 @@ $bottom-controls-container-height: 72px;
                 opacity: 0;
                 transition: .1s ease-in-out;
                 z-index: -1;
+                flex: 0 1 36px;
             }
 
             &:hover:before, &:focus:before {
@@ -668,6 +677,7 @@ $bottom-controls-container-height: 72px;
             filter: saturate(0) blur(0);
             opacity: 0;
             transition: .1s ease-in-out;
+            flex: 0 1 36px;
         }
 
         &:hover:before, &:focus:before {
@@ -780,6 +790,7 @@ $bottom-controls-container-height: 72px;
 .settingsMenu {
     position: fixed;
     width: 340px;
+    max-width: calc(100vw - 40px);
     bottom: $bottom-controls-container-height;
     left: 0;
     display: flex;
@@ -1160,6 +1171,7 @@ $bottom-controls-container-height: 72px;
     align-items: center;
     overflow-y: auto;
     scrollbar-width: thin;
+    max-width: 100vw;
 
     &::-webkit-scrollbar {
         width: 12px;
@@ -1281,6 +1293,7 @@ $bottom-controls-container-height: 72px;
     &__customizeContainer {
         width: calc(100% - 48px);
         display: flex;
+        flex-wrap: wrap;
         margin: 8px 24px 12px 24px;
         align-items: flex-start;
         border-image: none;
@@ -1743,25 +1756,40 @@ input:checked+.slider:before {
     display: flex;
     align-items: center;
     height: 100%;
+    width: 100%;
 }
 
 .myProfileContainer {
     display: flex;
     justify-content: center;
-    flex-direction: column;
-    flex-wrap: wrap;
-    width: 140px;
+    flex-direction: row;
+    flex-wrap: nowrap;
     height: 100%;
-    margin: 0 12px 0 24px;
+    flex: 0 0 auto;
+
+    @include media(">phone") {
+        margin: 0 8px 0 24px;
+    }
+
+    @include media("<=phone") {
+        margin: 0 0 0 8px;
+    }
+}
+
+.myProfileTextContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
 }
 
 .myProfileImage {
     &Container {
-        flex-basis: 100%;
         display: flex;
         justify-content: center;
         align-items: center;
         margin: 0 7px 0 0;
+        width: 39px;
     }
 
     height: 39px;
@@ -1783,6 +1811,10 @@ input:checked+.slider:before {
     white-space: nowrap;
     text-overflow: ellipsis;
     width: calc(140px - 38px - 7px);
+
+    @include media("<=phone") {
+        display: none;
+    }
 }
 
 .editMyProfileButton {
@@ -1796,6 +1828,10 @@ input:checked+.slider:before {
     text-align: left;
     border: none;
     width: fit-content;
+
+    @include media("<=phone") {
+        display: none;
+    }
 
     &--light-theme {
         color: map-get(themes.$light-theme, edit-my-profile-link);

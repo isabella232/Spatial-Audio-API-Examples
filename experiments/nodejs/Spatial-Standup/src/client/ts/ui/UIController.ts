@@ -124,9 +124,13 @@ export class UIController {
         myProfileImageContainer.appendChild(myProfileImage);
         myProfileContainer.appendChild(myProfileImageContainer);
 
+        let myProfileTextContainer = document.createElement("div");
+        myProfileTextContainer.classList.add("myProfileTextContainer");
+        myProfileContainer.appendChild(myProfileTextContainer);
+
         let myDisplayName = document.createElement("p");
         myDisplayName.classList.add("myDisplayName");
-        myProfileContainer.appendChild(myDisplayName);
+        myProfileTextContainer.appendChild(myDisplayName);
 
         let editMyProfileButton = document.createElement("button");
         editMyProfileButton.innerHTML = "Edit My Profile";
@@ -135,7 +139,7 @@ export class UIController {
             this.showAvatarContextMenu(userDataController.myAvatar.myUserData);
             e.stopPropagation();
         });
-        myProfileContainer.appendChild(editMyProfileButton);
+        myProfileTextContainer.appendChild(editMyProfileButton);
 
         bottomControlsContainer.appendChild(myProfileContainer);
 
