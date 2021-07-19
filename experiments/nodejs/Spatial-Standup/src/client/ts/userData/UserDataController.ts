@@ -7,6 +7,7 @@ import { chairSounds } from "../sounds/LocalSoundsController";
 import { SpatialAudioSeat, SpatialStandupRoom, SpatialStandupRoomType } from "../ui/RoomController";
 import { DataToTransmitToHiFi, EasingFunctions, Utilities } from "../utilities/Utilities";
 
+declare var HIFI_SPACE_NAME: string;
 declare var HIFI_PROVIDED_USER_ID: string;
 
 interface TempUserData {
@@ -130,7 +131,28 @@ class MyAvatar {
         }
     }
 
-    positionSelfInRoom(targetRoomName: string) {
+    async requestNewSeat(targetSeat: SpatialAudioSeat) {
+        console.log(`Requesting new seat with ID \`${targetSeat.seatID}\`...`)
+        let queryURL = `/${HIFI_SPACE_NAME}/requestNewSeat?seatID=${targetSeat.seatID}&visitIDHash=${this.myUserData.visitIDHash}`;
+        let queryResponseJSON;
+        try {
+            let queryResponse = await fetch(queryURL);
+            queryResponseJSON = await queryResponse.json();
+        } catch (e) {
+            console.error(`Seat request \`${targetSeat.seatID}\` denied! Couldn't query seat via URL \`${queryURL}\`! Error:\n${e}`);
+            return false;
+        }
+
+        if (queryResponseJSON.requestGranted) {
+            console.log(`Seat request \`${targetSeat.seatID}\` granted!`);
+            return true;
+        }
+
+        console.warn(`Seat request \`${targetSeat.seatID}\` denied!`)
+        return false;
+    }
+
+    async positionSelfInRoom(targetRoomName: string) {
         if (pathsController.currentPath) {
             return;
         }
@@ -169,17 +191,33 @@ class MyAvatar {
             console.warn(`\`positionSelfInRoom()\`: Couldn't find any open seats in any room!`);
             return;
         }
+
+        let canMoveToNewSeat = await this.requestNewSeat(newSeat);
+        if (!canMoveToNewSeat) {
+            this.positionSelfInRoom(targetRoomName);
+            return;
+        }
+
         console.log(`Found an open spot on seat \`${newSeat.seatID}\` in room ${newSeat.room.name} at ${JSON.stringify(newSeat.position)} with orientation ${JSON.stringify(newSeat.orientation)}.`);
         this.moveToNewSeat(newSeat);
     }
 
-    moveToNewSeat(targetSeat: SpatialAudioSeat) {
+    async moveToNewSeat(targetSeat: SpatialAudioSeat) {
         if (!userDataController.myAvatar) {
             console.warn(`Can't move to new seat - \`userDataController.myAvatar\` is falsey!`);
             return;
         }
 
         let myUserData = userDataController.myAvatar.myUserData;
+
+
+        let canMoveToNewSeat = await this.requestNewSeat(targetSeat);
+        if (!canMoveToNewSeat) {
+            console.error(`Request to move to new seat deined; please try again or choose a new seat.`);
+            return;
+        }
+
+
         let dataToTransmit: DataToTransmitToHiFi = {};
 
         myUserData.motionStartTimestamp = undefined;

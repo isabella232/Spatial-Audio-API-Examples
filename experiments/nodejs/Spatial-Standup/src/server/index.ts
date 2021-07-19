@@ -397,6 +397,32 @@ app.post('/create', (req: any, res: any, next: any) => {
     });
 });
 
+app.get('/:spaceName/requestNewSeat', (req: any, res: any, next: any) => {
+    let spaceName = req.params.spaceName || req.query.spaceName || auth.HIFI_DEFAULT_SPACE_NAME;
+    let seatID = req.query.seatID;
+    let visitIDHash = req.query.visitIDHash;
+
+    if (!(spaceName && seatID && visitIDHash && spaceInformation[spaceName] && spaceInformation[spaceName].participants)) {
+        return res.json({
+            requestGranted: false,
+        });
+    }
+
+    let participant = spaceInformation[spaceName].participants.find((participant: Participant) => {
+        return participant.currentSeatID === seatID;
+    });
+
+    if (participant && participant.visitIDHash !== visitIDHash) {
+        return res.json({
+            requestGranted: false,
+        });
+    } else {
+        return res.json({
+            requestGranted: true,
+        });
+    }
+});
+
 app.get('/:spaceName', connectToSpace);
 
 let httpOrHttpsServer;
