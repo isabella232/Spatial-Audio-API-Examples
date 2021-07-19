@@ -1624,8 +1624,11 @@ $bottom-controls-container-height: 72px;
 }
 
 .switch input { 
-    width: 48px;
-    height: 26px;
+    width: 44px;
+    height: 22px;
+    position: relative;
+    top: 2px;
+    left: 2px;
 }
 
 .slider {
