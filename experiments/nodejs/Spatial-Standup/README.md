@@ -8,7 +8,6 @@ A very complex demo application for High Fidelity's Spatial Audio API written in
 - The repository includes code for generating a native Electron app from the Spatial Standup code (try `npm run electron`).
 - Code for injecting Audio Bots (with tree sounds!) into a Spatial Standup Room (try `npm run audiobots`).
 - A particle system, currently used for "Signals" (click the star and minus icon in the top right, then click on the canvas).
-- The ability for users to put their "ears" in the center of a table, to hear what that sounds like (press "U" on your keyboard when sitting in a seat).
 - A bare-bones "map editor" mode (press CTRL+E on your keyboard).
 
 For help with Spatial Standup, or for general help with the Spatial Audio API, [click here to join our Discord server](https://discord.gg/WwjNQx9K).
@@ -80,7 +79,7 @@ If you'd like to run the Spatial Standup client as a native app, try one of thes
 - `npm run package`
     - This command will build the necessary client files, invoke Electron to transform those files into a native app, then package the native app into an installer for your current platform.
 
-## Getting Analytics about Spatial Standup Usage
+## Getting Analytics about Spatial Standup Usage - PostgreSQL Database
 1. Install `postgresql` on your local machine.
 2. Configure `postgresql` locally, then create a new database (called `sar`, for example).
 3. Create a new schema inside that new database called `analytics`.
@@ -93,3 +92,11 @@ You can use commands like the below to access the analytics from the database:
 SELECT * FROM analytics.events
 ORDER BY id ASC;
 ```
+
+## Getting Analytics about Spatial Standup Usage - Google Sheets
+1. Inside `auth.json`, fill in `ANALYTICS_GOOGLE_SHEET_ID` with the Google Sheet ID of the sheet to which you want analytics to be saved.
+2. Copy `google-service-account.example.json` to `google-service-account.json` and fill in the values for each key.
+    - For more information about Google Service Accounts, [see Google's documentation here](https://cloud.google.com/iam/docs/service-accounts).
+    - Make sure the project associated with your Service Account has access to the Google Sheets API.
+
+Certain analytics, such as "Server Started", "User Connected", and "User Disconnected" will both be printed to the server's logs and be added to the specified Google Sheet.

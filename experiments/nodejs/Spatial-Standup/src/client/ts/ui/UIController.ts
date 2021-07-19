@@ -1,4 +1,4 @@
-import { accessibilityController, connectionController, physicsController, roomController, s3Controller, twoDimensionalRenderer, uiThemeController, userDataController, userInputController, webSocketConnectionController } from '..';
+import { accessibilityController, connectionController, physicsController, roomController, s3Controller, twoDimensionalRenderer, uiThemeController, userDataController, userInputController, videoController, webSocketConnectionController } from '..';
 import '../../css/controls.scss';
 import { AudionetInitResponse } from '../connection/ConnectionController';
 import { UserData } from '../userData/UserDataController';
@@ -13,15 +13,20 @@ export class UIController {
     playOverlay: HTMLElement;
     modalBackground: HTMLDivElement;
     avatarContextMenu: HTMLDivElement;
+    keyboardShortcutsModal: HTMLDivElement;
     hasCompletedTutorial: boolean;
     bottomRightControlsContainer: HTMLDivElement;
+    screenShareContainer: HTMLDivElement;
+    showScreenShareHeaderTimeout: NodeJS.Timer;
 
     constructor() {
         this.initPlayOverlay();
         this.initMainUI();
         this.initBottomRightControls();
         this.initContextMenu();
+        this.initKeyboardShortcutsModal();
         this.hideLoadingOverlay();
+        this.initScreenShareUI();
 
         this.hasCompletedTutorial = localStorage.getItem("hasCompletedTutorial") === "true";
     }
@@ -88,6 +93,7 @@ export class UIController {
         bottomBar.classList.add("bottomBar", "displayNone");
         bottomBar.addEventListener("click", (e) => { userInputController.hideSettingsMenu(); });
         bottomBar.addEventListener("click", this.hideAvatarContextMenu.bind(this));
+        bottomBar.addEventListener("click", this.hideKeyboardShortcutsModal.bind(this));
         document.body.appendChild(bottomBar);
 
         let topBar = document.createElement("div");
@@ -121,9 +127,13 @@ export class UIController {
         myProfileImageContainer.appendChild(myProfileImage);
         myProfileContainer.appendChild(myProfileImageContainer);
 
+        let myProfileTextContainer = document.createElement("div");
+        myProfileTextContainer.classList.add("myProfileTextContainer");
+        myProfileContainer.appendChild(myProfileTextContainer);
+
         let myDisplayName = document.createElement("p");
         myDisplayName.classList.add("myDisplayName");
-        myProfileContainer.appendChild(myDisplayName);
+        myProfileTextContainer.appendChild(myDisplayName);
 
         let editMyProfileButton = document.createElement("button");
         editMyProfileButton.innerHTML = "Edit My Profile";
@@ -132,7 +142,7 @@ export class UIController {
             this.showAvatarContextMenu(userDataController.myAvatar.myUserData);
             e.stopPropagation();
         });
-        myProfileContainer.appendChild(editMyProfileButton);
+        myProfileTextContainer.appendChild(editMyProfileButton);
 
         bottomControlsContainer.appendChild(myProfileContainer);
 
@@ -151,6 +161,14 @@ export class UIController {
         toggleVideoButton.setAttribute("aria-label", "Camera is disabled. Click to enable your camera.");
         toggleVideoButton.classList.add("bottomControlButton", "toggleVideoButton", "toggleVideoButton--muted");
         bottomControlsContainer.appendChild(toggleVideoButton);
+
+        // @ts-ignore
+        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+            let toggleScreenShareButton = document.createElement("button");
+            toggleScreenShareButton.setAttribute("aria-label", "Screen share is disabled. Click to share your screen.");
+            toggleScreenShareButton.classList.add("bottomControlButton", "toggleScreenShareButton", "toggleScreenShareButton--muted");
+            bottomControlsContainer.appendChild(toggleScreenShareButton);
+        }
 
         let toggleSettingsButton = document.createElement("button");
         toggleSettingsButton.setAttribute("aria-label", "Open Device Settings");
@@ -183,7 +201,17 @@ export class UIController {
         this.modalBackground = document.createElement("div");
         this.modalBackground.classList.add("modalBackground", "displayNone");
         this.modalBackground.addEventListener("click", this.hideAvatarContextMenu.bind(this));
+        this.modalBackground.addEventListener("click", this.hideKeyboardShortcutsModal.bind(this));
         document.body.appendChild(this.modalBackground);
+    }
+
+    initScreenShareUI() {
+        this.screenShareContainer = document.createElement("div");
+        this.screenShareContainer.classList.add("screenShareContainer", "displayNone");
+        this.screenShareContainer.addEventListener("mousemove", () => {
+            this.showScreenShareHeader();
+        });
+        document.body.appendChild(this.screenShareContainer);
     }
 
     showMainUI() {
@@ -293,6 +321,16 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
 
     initBottomRightControls() {
         let bottomRightControlsContainer = document.createElement("div");
+        bottomRightControlsContainer.addEventListener("mouseenter", () => {
+            document.querySelectorAll(".bottomRightControlText").forEach((el) => {
+                el.classList.remove("displayNone");
+            });
+        });
+        bottomRightControlsContainer.addEventListener("mouseleave", () => {
+            document.querySelectorAll(".bottomRightControlText").forEach((el) => {
+                el.classList.add("displayNone");
+            });
+        });
         bottomRightControlsContainer.setAttribute("role", "navigation");
         bottomRightControlsContainer.classList.add("bottomRightControlsContainer", "displayNone");
         document.body.appendChild(bottomRightControlsContainer);
@@ -328,6 +366,21 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
         });
         zoomOutContainer.appendChild(zoomOutButton);
         bottomRightControlsContainer.appendChild(zoomOutContainer);
+
+        let openKeyboardShortcutsContainer = document.createElement("div");
+        openKeyboardShortcutsContainer.classList.add("bottomRightControlContainer", "openKeyboardShortcutsContainer");
+        let openKeyboardShortcutsText = document.createElement("span");
+        openKeyboardShortcutsText.classList.add("bottomRightControlText", "displayNone");
+        openKeyboardShortcutsText.innerHTML = "Show Keyboard Shortcuts";
+        openKeyboardShortcutsContainer.appendChild(openKeyboardShortcutsText);
+        let showKeyboardShortcutsButton = document.createElement("button");
+        showKeyboardShortcutsButton.setAttribute("aria-label", "Show Keyboard Shortcuts");
+        showKeyboardShortcutsButton.classList.add("zoomButton", "showKeyboardShortcutsButton");
+        showKeyboardShortcutsButton.addEventListener("click", () => {
+            this.showKeyboardShortcutsModal();
+        });
+        openKeyboardShortcutsContainer.appendChild(showKeyboardShortcutsButton);
+        bottomRightControlsContainer.appendChild(openKeyboardShortcutsContainer);
     }
 
     initContextMenu() {
@@ -336,6 +389,76 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
         this.avatarContextMenu.classList.add("avatarContextMenu", "displayNone");
         this.avatarContextMenu.addEventListener("click", (e) => { e.stopPropagation(); });
         this.modalBackground.appendChild(this.avatarContextMenu);
+    }
+
+    initKeyboardShortcutsModal() {
+        this.keyboardShortcutsModal = document.createElement("div");
+        this.keyboardShortcutsModal.setAttribute("role", "dialog");
+        this.keyboardShortcutsModal.classList.add("keyboardShortcutsModal", "displayNone");
+        this.keyboardShortcutsModal.addEventListener("click", (e) => { e.stopPropagation(); });
+
+        let closeButton = document.createElement("button");
+        closeButton.classList.add("avatarContextMenu__closeButton");
+        closeButton.setAttribute("aria-label", "Close Keyboard Shortcuts Dialog");
+        closeButton.addEventListener("click", (e) => {
+            this.hideKeyboardShortcutsModal();
+        });
+        this.keyboardShortcutsModal.appendChild(closeButton);
+
+        let keyboardShortcut__header = document.createElement("h1");
+        keyboardShortcut__header.classList.add("keyboardShortcut__header");
+        keyboardShortcut__header.innerHTML = "Keyboard Shortcuts";
+        this.keyboardShortcutsModal.appendChild(keyboardShortcut__header);
+
+        let shortcuts: any = {
+            "Movement": {
+                "Rotate Left": ["A", "←"],
+                "Rotate Right": ["D", "→"],
+            },
+            "Audio": {
+                "Toggle Mic Mute": ["M"],
+                "Push to Talk": ["Space Bar"],
+            },
+            "Interface": {
+                "Zoom Out": ["-"],
+                "Zoom In": ["+"],
+                "Close Dialog": ["ESC"],
+                "Show Keyboard Shortcuts": ["?"],
+            },
+            "Advanced": {
+                "Highlight Seat Clockwise": ["J"],
+                "Move to Highlighted Seat": ["K"],
+                "Highlight Seat Counter-Clockwise": ["L"],
+            },
+        };
+
+        let categoryKeys = Object.keys(shortcuts);
+        for (let k = 0; k < categoryKeys.length; k++) {
+            let keyboardShortcut__categoryHeader = document.createElement("h2");
+            keyboardShortcut__categoryHeader.classList.add("keyboardShortcut__categoryHeader")
+            keyboardShortcut__categoryHeader.innerHTML = categoryKeys[k];
+            this.keyboardShortcutsModal.appendChild(keyboardShortcut__categoryHeader);
+
+            let keysKeys = Object.keys(shortcuts[categoryKeys[k]]);
+            for (let i = 0; i < keysKeys.length; i++) {
+                let el = document.createElement("p");
+                el.classList.add("keyboardShortcut");
+    
+                let keys = shortcuts[categoryKeys[k]][keysKeys[i]];
+                for (let j = 0; j < keys.length; j++) {
+                    let span = document.createElement("span");
+                    span.classList.add("keyboardShortcut__key");
+                    span.innerHTML = keys[j];
+                    el.appendChild(span);
+                }
+    
+                el.innerHTML += `<span class="keyboardShortcut__keyDescription">${keysKeys[i]}</span>`;
+    
+                this.keyboardShortcutsModal.appendChild(el);
+            }
+        }
+
+        this.modalBackground.appendChild(this.keyboardShortcutsModal);
     }
 
     hideLoadingOverlay() {
@@ -390,6 +513,20 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
         document.querySelector(".normalModeCanvas").setAttribute("tabIndex", "0");
         (<HTMLCanvasElement>document.querySelector(".normalModeCanvas")).focus();
     }
+
+    showKeyboardShortcutsModal() {
+        this.modalBackground.classList.remove("displayNone");
+        this.keyboardShortcutsModal.classList.remove("displayNone");
+        let closeButton = <HTMLButtonElement>this.keyboardShortcutsModal.querySelector(".avatarContextMenu__closeButton");
+        if (closeButton) {
+            closeButton.focus();
+        }
+    }
+
+    hideKeyboardShortcutsModal() {
+        this.keyboardShortcutsModal.classList.add("displayNone");
+        this.modalBackground.classList.add("displayNone");
+    }
     
     generateCloseButtonUI() {
         let closeButton = document.createElement("button");
@@ -441,32 +578,6 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
             });
             avatarContextMenu__avatarRepresentation.appendChild(avatarContextMenu__avatarCircle);
 
-            let avatarContextMenu__colorPickerContainer = document.createElement("div");
-            avatarContextMenu__colorPickerContainer.classList.add("avatarContextMenu__colorPickerContainer", "displayNone");
-            avatarContextMenu__colorPickerContainer.addEventListener("click", (e) => {
-                e.stopPropagation();
-            });
-            let avatarContextMenu__closeColorPickerButton = document.createElement("div");
-            avatarContextMenu__closeColorPickerButton.classList.add("avatarContextMenu__closeButton");
-            avatarContextMenu__closeColorPickerButton.addEventListener("click", (e) => {
-                avatarContextMenu__colorPickerContainer.classList.add("displayNone");
-            });
-            avatarContextMenu__colorPickerContainer.appendChild(avatarContextMenu__closeColorPickerButton);
-            this.avatarContextMenu.appendChild(avatarContextMenu__colorPickerContainer);
-            this.avatarContextMenu.addEventListener("click", (e) => {
-                avatarContextMenu__colorPickerContainer.classList.add("displayNone");
-            });
-
-            const colorPicker = new ColorPicker({
-                el: avatarContextMenu__colorPickerContainer,
-                color: userData.colorHex,
-                width: 200,
-                height: 200
-            });
-            colorPicker.onChange((e: string) => {
-                userDataController.myAvatar.onMyColorHexChanged(e);
-            });
-
             if (userData.profileImageURL && userData.profileImageURL.length > 0) {
                 let removeProfileImageButton = document.createElement("button");
                 removeProfileImageButton.setAttribute("aria-label", "Remove Profile Photo");
@@ -484,6 +595,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
             chooseColorButton.classList.add("avatarContextMenu__chooseColorButton");
             chooseColorButton.addEventListener('click', (e) => {
                 avatarContextMenu__colorPickerContainer.classList.remove("displayNone");
+                avatarContextMenu__closeColorPickerButton.focus();
                 e.stopPropagation();
             });
             let chooseColorButtonImage = document.createElement("img");
@@ -536,6 +648,33 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
 
             this.avatarContextMenu.appendChild(displayName);
             this.avatarContextMenu.appendChild(avatarContextMenu__customizeContainer);
+
+            let avatarContextMenu__colorPickerContainer = document.createElement("div");
+            avatarContextMenu__colorPickerContainer.classList.add("avatarContextMenu__colorPickerContainer", "displayNone");
+            avatarContextMenu__colorPickerContainer.addEventListener("click", (e) => {
+                e.stopPropagation();
+            });
+            let avatarContextMenu__closeColorPickerButton = document.createElement("button");
+            avatarContextMenu__closeColorPickerButton.classList.add("avatarContextMenu__closeButton");
+            avatarContextMenu__closeColorPickerButton.setAttribute("aria-label", "Close Color Picker");
+            avatarContextMenu__closeColorPickerButton.addEventListener("click", (e) => {
+                avatarContextMenu__colorPickerContainer.classList.add("displayNone");
+            });
+            avatarContextMenu__colorPickerContainer.appendChild(avatarContextMenu__closeColorPickerButton);
+            this.avatarContextMenu.appendChild(avatarContextMenu__colorPickerContainer);
+            this.avatarContextMenu.addEventListener("click", (e) => {
+                avatarContextMenu__colorPickerContainer.classList.add("displayNone");
+            });
+
+            const colorPicker = new ColorPicker({
+                el: avatarContextMenu__colorPickerContainer,
+                color: userData.colorHex,
+                width: 200,
+                height: 200
+            });
+            colorPicker.onChange((e: string) => {
+                userDataController.myAvatar.onMyColorHexChanged(e);
+            });
         } else {
             displayName = document.createElement("h1");
             displayName.classList.add("avatarContextMenu__displayName");
@@ -619,7 +758,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
     }
 
     generateEchoCancellationUI(userData: UserData) {
-        if (typeof (userData.echoCancellationEnabled) !== "boolean" || !(typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().echoCancellation)) {
+        if (typeof (userData.echoCancellationEnabled) !== "boolean" || (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash && !(typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().echoCancellation))) {
             return;
         }
 
@@ -663,7 +802,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
     }
 
     generateAGCUI(userData: UserData) {
-        if (typeof (userData.agcEnabled) !== "boolean" || !(typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().autoGainControl)) {
+        if (typeof (userData.agcEnabled) !== "boolean" || (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash && !(typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().autoGainControl))) {
             return;
         }
 
@@ -707,7 +846,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
     }
 
     generateNoiseSuppressionUI(userData: UserData) {
-        if (typeof (userData.noiseSuppressionEnabled) !== "boolean" || !(typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().noiseSuppression)) {
+        if (typeof (userData.noiseSuppressionEnabled) !== "boolean" || (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash && !(typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().noiseSuppression))) {
             return;
         }
 
@@ -994,6 +1133,107 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
         });
 
         this.avatarContextMenu.appendChild(muteForAllButton);
+    }
+
+    createAndShowScreenShareUI(userData: UserData) {
+        if (!videoController.providedUserIDToVideoElementMap.has(userData.providedUserID)) {
+            return;
+        }
+
+        this.hideScreenShareUI();
+
+        this.screenShareContainer.innerHTML = ``;
+
+        let screenShareHeader = document.createElement("div");
+        screenShareHeader.classList.add("screenShareHeader", "displayNone");
+        this.screenShareContainer.appendChild(screenShareHeader);
+
+        let screenShareHeader__avatarContainer = document.createElement("div");
+        screenShareHeader__avatarContainer.classList.add("screenShareHeader__avatarContainer");
+        screenShareHeader.appendChild(screenShareHeader__avatarContainer);
+
+        let screenShareHeader__avatar = document.createElement("button");
+        screenShareHeader__avatar.classList.add("screenShareHeader__avatar");
+        screenShareHeader__avatar.style.backgroundColor = userData.colorHex;
+        screenShareHeader__avatar.style.borderColor = userData.colorHex;
+        if (userData.profileImageEl && userData.profileImageEl.complete) {
+            screenShareHeader__avatar.style.backgroundImage = `url(${userData.profileImageURL})`;
+        }
+        screenShareHeader__avatar.addEventListener("click", () => {
+            this.showAvatarContextMenu(userData);
+        });
+        screenShareHeader__avatarContainer.appendChild(screenShareHeader__avatar);
+
+        let screenShareHeader__textContainer = document.createElement("div");
+        screenShareHeader__textContainer.classList.add("screenShareHeader__textContainer");
+        screenShareHeader__avatarContainer.appendChild(screenShareHeader__textContainer);
+
+        let screenShareHeader__displayName = document.createElement("p");
+        screenShareHeader__displayName.classList.add("screenShareHeader__displayName");
+        screenShareHeader__displayName.innerHTML = userData.displayName;
+        screenShareHeader__textContainer.appendChild(screenShareHeader__displayName);
+
+        let screenShareHeader__bottomText = document.createElement("p");
+        screenShareHeader__bottomText.classList.add("screenShareHeader__bottomText");
+        screenShareHeader__bottomText.innerHTML = "is sharing their screen";
+        screenShareHeader__textContainer.appendChild(screenShareHeader__bottomText);
+
+        let screenShareHeader__exitContainer = document.createElement("button");
+        screenShareHeader__exitContainer.classList.add("screenShareHeader__exitContainer");
+        screenShareHeader__exitContainer.addEventListener("click", () => {
+            this.hideScreenShareUI();
+        });
+        screenShareHeader.appendChild(screenShareHeader__exitContainer);
+
+        let screenShareHeader__exitButton = document.createElement("button");
+        screenShareHeader__exitButton.classList.add("screenShareHeader__exitButton");
+        screenShareHeader__exitContainer.appendChild(screenShareHeader__exitButton);
+
+        let screenShareHeader__exitButtonText = document.createElement("button");
+        screenShareHeader__exitButtonText.classList.add("screenShareHeader__exitButtonText");
+        screenShareHeader__exitButtonText.innerHTML = "exit full screen";
+        screenShareHeader__exitContainer.appendChild(screenShareHeader__exitButtonText);
+
+        this.screenShareContainer.appendChild(videoController.providedUserIDToVideoElementMap.get(userData.providedUserID));
+        
+        this.screenShareContainer.classList.remove("displayNone");
+        this.showScreenShareHeader();
+    }
+
+    showScreenShareHeader() {
+        let screenShareHeader = document.querySelector(".screenShareHeader");
+        if (!screenShareHeader) {
+            return;
+        }
+
+        screenShareHeader.classList.remove("displayNone");
+
+        if (this.showScreenShareHeaderTimeout) {
+            clearTimeout(this.showScreenShareHeaderTimeout);
+            this.showScreenShareHeaderTimeout = undefined;
+        }
+
+        this.showScreenShareHeaderTimeout = setTimeout(() => {
+            this.showScreenShareHeaderTimeout = undefined;
+            screenShareHeader.classList.add("screenShareHeader--out");
+
+            setTimeout(() => {
+                screenShareHeader.classList.remove("screenShareHeader--out");
+                screenShareHeader.classList.add("displayNone");
+            }, 250);
+        }, UI.SCREEN_SHARE_HEADER_TIMEOUT_MS);
+    }
+
+    hideScreenShareUI() {
+        let videoContainer = document.querySelector(".videoContainer");
+        if (videoContainer) {
+            let allVideoNodes = this.screenShareContainer.querySelectorAll("video");
+            allVideoNodes.forEach((videoNode) => {
+                videoContainer.appendChild(videoNode);
+            });
+        }
+
+        this.screenShareContainer.classList.add("displayNone");
     }
 
     showAvatarContextMenu(userData: UserData) {

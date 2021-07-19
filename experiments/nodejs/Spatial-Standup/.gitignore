@@ -1,4 +1,4 @@
 auth.json
+google-service-account.json
 out/
-src/server/dist
 dist-server/

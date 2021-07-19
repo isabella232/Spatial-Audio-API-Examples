@@ -1,3 +1,5 @@
+import { VideoStreamingStates } from "../shared/shared";
+
 let serverMode = process.argv.slice(2)[0]; // Should be "dev", "staging", or "prod".
 const isInHTTPSMode = process.argv.slice(2)[1] === "true";
 
@@ -13,7 +15,7 @@ import * as crypto from "crypto";
 import fetch from 'node-fetch';
 import { URLSearchParams } from "url";
 import { ServerAnalyticsController, ServerAnalyticsEventCategory, SlackBotAddedEvent, SlackBotInstallerInfoCollectedEvent, SlackBotAdminInfoCollectedEvent, SlackBotUsedEvent, UserConnectedOrDisconnectedEvent } from "./analytics/ServerAnalyticsController";
-const auth = require('../../../auth.json');
+const auth = require('../../auth.json');
 const { generateHiFiJWT } = require('./utilities');
 import { renderApp } from "./serverRender";
 
@@ -31,7 +33,7 @@ if (serverMode === "dev") {
     const webpackDevMiddleware = require('webpack-dev-middleware');
     const chokidar = require('chokidar');
 
-    const WEBPACK_CONFIG = require('../../../webpack.config.js')();
+    const WEBPACK_CONFIG = require('../../webpack.config.js')();
     const WEBPACK_COMPILER = webpack(WEBPACK_CONFIG);
 
     const devMiddleWare = webpackDevMiddleware(WEBPACK_COMPILER, { publicPath: WEBPACK_CONFIG.output.publicPath, });
@@ -69,9 +71,9 @@ if (serverMode === "dev") {
     });
 }
 
-const DIST_DIR = path.join(__dirname, "..", "..", "..", "dist");
+const DIST_DIR = path.join(__dirname, "..", "..", "dist");
 app.use('/', express.static(DIST_DIR));
-app.use('/', express.static(path.join(__dirname, "static")));
+app.use('/', express.static(path.join(__dirname, "..", "static")));
 app.use(require('body-parser').urlencoded({ extended: true }));
 
 app.get('/', connectToSpace);
@@ -278,8 +280,8 @@ app.get('/slack', (req: any, res: any, next: any) => {
         .then((res: any) => res.json())
         .then((json: any) => {
             if (json && json.ok) {
-                analyticsController.logEvent(ServerAnalyticsEventCategory.SlackBotAdded, new SlackBotAddedEvent());
                 showSlackSuccess(json.team.name, res);
+                analyticsController.logEvent(ServerAnalyticsEventCategory.SlackBotAdded, new SlackBotAddedEvent(json.team ? json.team.name : "unknown team name", json.team ? json.team.id : "unknown team ID"));
 
                 const usersInfoParams = new URLSearchParams();
                 usersInfoParams.append("token", json.access_token);
@@ -296,7 +298,7 @@ app.get('/slack', (req: any, res: any, next: any) => {
                         }
                         let installerKeys = Object.keys(slackInstaller);
                         for (let i = 0; i < installerKeys.length; i++) {
-                            if (!(installerKeys[i] === "profile" || installerKeys[i] === "real_name")) {
+                            if (!(installerKeys[i] === "profile" || installerKeys[i] === "real_name" || installerKeys[i] === "id" || installerKeys[i] === "team_id")) {
                                 delete slackInstaller[installerKeys[i]];
                             }
                         }
@@ -323,7 +325,7 @@ app.get('/slack', (req: any, res: any, next: any) => {
                             }
                             let adminKeys = Object.keys(slackAdmin);
                             for (let i = 0; i < adminKeys.length; i++) {
-                                if (!(adminKeys[i] === "profile" || adminKeys[i] === "real_name")) {
+                                if (!(adminKeys[i] === "profile" || adminKeys[i] === "real_name" || adminKeys[i] === "id" || adminKeys[i] === "team_id")) {
                                     delete slackAdmin[adminKeys[i]];
                                 }
                             }
@@ -395,6 +397,32 @@ app.post('/create', (req: any, res: any, next: any) => {
     });
 });
 
+app.get('/:spaceName/requestNewSeat', (req: any, res: any, next: any) => {
+    let spaceName = req.params.spaceName || req.query.spaceName || auth.HIFI_DEFAULT_SPACE_NAME;
+    let seatID = req.query.seatID;
+    let visitIDHash = req.query.visitIDHash;
+
+    if (!(spaceName && seatID && visitIDHash && spaceInformation[spaceName] && spaceInformation[spaceName].participants)) {
+        return res.json({
+            requestGranted: false,
+        });
+    }
+
+    let participant = spaceInformation[spaceName].participants.find((participant: Participant) => {
+        return participant.currentSeatID === seatID;
+    });
+
+    if (participant && participant.visitIDHash !== visitIDHash) {
+        return res.json({
+            requestGranted: false,
+        });
+    } else {
+        return res.json({
+            requestGranted: true,
+        });
+    }
+});
+
 app.get('/:spaceName', connectToSpace);
 
 let httpOrHttpsServer;
@@ -447,7 +475,7 @@ class Participant {
     hiFiGainSliderValue: string;
     volumeThreshold: number;
     currentWatchPartyRoomName: string;
-    isStreamingVideo: boolean;
+    isStreamingVideo: VideoStreamingStates;
 
     constructor({
         userUUID,
@@ -484,7 +512,7 @@ class Participant {
         hiFiGainSliderValue: string,
         volumeThreshold: number,
         currentWatchPartyRoomName: string,
-        isStreamingVideo: boolean,
+        isStreamingVideo: VideoStreamingStates,
     }) {
         this.userUUID = userUUID;
         this.sessionStartTimestamp = sessionStartTimestamp;
@@ -594,7 +622,7 @@ socketIOServer.on("connection", (socket: any) => {
         hiFiGainSliderValue: string,
         volumeThreshold: number,
         currentWatchPartyRoomName: string,
-        isStreamingVideo: boolean,
+        isStreamingVideo: VideoStreamingStates,
     }) => {
         if (!spaceInformation[spaceName]) {
             spaceInformation[spaceName] = new ServerSpaceInfo({ spaceName });
@@ -664,7 +692,7 @@ socketIOServer.on("connection", (socket: any) => {
         hiFiGainSliderValue: string,
         volumeThreshold: number,
         currentWatchPartyRoomName: string,
-        isStreamingVideo: boolean,
+        isStreamingVideo: VideoStreamingStates,
     }) => {
         let participantToEdit = spaceInformation[spaceName].participants.find((participant: Participant) => {
             return participant.visitIDHash === visitIDHash;
@@ -704,7 +732,7 @@ socketIOServer.on("connection", (socket: any) => {
             if (typeof (currentWatchPartyRoomName) === "string") {
                 participantToEdit.currentWatchPartyRoomName = currentWatchPartyRoomName;
             }
-            if (typeof (isStreamingVideo) === "boolean") {
+            if (isStreamingVideo !== undefined) {
                 participantToEdit.isStreamingVideo = isStreamingVideo;
             }
             socket.to(spaceName).emit("onParticipantsAddedOrEdited", [participantToEdit]);

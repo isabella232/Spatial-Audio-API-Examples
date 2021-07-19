@@ -282,6 +282,7 @@ $bottom-controls-container-height: 72px;
     padding: 0;
     margin: 0 8px;
     position: relative;
+    flex: 0 1 32px;
 }
 
 .toggleInputMuteButton {
@@ -313,6 +314,7 @@ $bottom-controls-container-height: 72px;
                 filter: saturate(0) blur(0);
                 opacity: 0;
                 transition: .1s ease-in-out;
+                flex: 0 1 36px;
             }
 
             &:hover:before, &:focus:before {
@@ -354,6 +356,7 @@ $bottom-controls-container-height: 72px;
                 opacity: 0;
                 transition: .1s ease-in-out;
                 z-index: -1;
+                flex: 0 1 36px;
             }
 
             &:hover:before, &:focus:before {
@@ -396,6 +399,7 @@ $bottom-controls-container-height: 72px;
                 filter: saturate(0) blur(0);
                 opacity: 0;
                 transition: .1s ease-in-out;
+                flex: 0 1 36px;
             }
 
             &:hover:before, &:focus:before {
@@ -437,6 +441,7 @@ $bottom-controls-container-height: 72px;
                 opacity: 0;
                 transition: .1s ease-in-out;
                 z-index: -1;
+                flex: 0 1 36px;
             }
 
             &:hover:before, &:focus:before {
@@ -491,6 +496,7 @@ $bottom-controls-container-height: 72px;
                 filter: saturate(0) blur(0);
                 opacity: 0;
                 transition: .1s ease-in-out;
+                flex: 0 1 36px;
             }
 
             &:hover:before, &:focus:before {
@@ -532,6 +538,7 @@ $bottom-controls-container-height: 72px;
                 opacity: 0;
                 transition: .1s ease-in-out;
                 z-index: -1;
+                flex: 0 1 36px;
             }
 
             &:hover:before, &:focus:before {
@@ -555,6 +562,103 @@ $bottom-controls-container-height: 72px;
     }
 }
 
+.toggleScreenShareButton {
+    &--disabled {
+        cursor: no-drop;
+
+        &--light-theme {
+            background-image: url('../images/icons/light-theme/screenshare-off-disabled-light.svg');
+        }
+
+        &--dark-theme {
+            background-image: url('../images/icons/dark-theme/grey-cam-with-cross.svg');
+        }
+    }
+
+    &--unmuted {
+        &--light-theme {
+            background-image: url('../images/icons/light-theme/screenshare-on-idle-light.svg');
+
+            &:before {
+                content: '';
+                position: absolute;
+                height: 36px;
+                width: 36px;
+                top: -2px;
+                left: -2px;
+                background-repeat: no-repeat;
+                background-size: contain;
+                background-position: center center;
+                background-image: url('../images/icons/light-theme/screenshare-on-idle-light.svg');
+                filter: saturate(0) blur(0);
+                opacity: 0;
+                transition: .1s ease-in-out;
+                flex: 0 1 36px;
+            }
+
+            &:hover:before, &:focus:before {
+                filter: saturate(0.4) blur(5px);
+                opacity: 0.6;
+                transition: .1s ease-in-out;
+            }
+
+            &:active {
+                background-image: url('../images/icons/light-theme/screenshare-off-click-light.svg');
+            }
+        }
+
+        &--dark-theme {
+            background-image: url('../images/icons/dark-theme/screenshare-on-idle-dark.svg');
+
+            &:not(:focus):hover {
+                background-image: url('../images/icons/dark-theme/screenshare-on-hover-dark.svg');
+            }
+        }
+    }
+
+    &--muted {
+        &--light-theme {
+            background-image: url('../images/icons/light-theme/screenshare-off-idle-light.svg');
+
+            &:before {
+                content: '';
+                position: absolute;
+                height: 36px;
+                width: 36px;
+                top: -2px;
+                left: -2px;
+                background-repeat: no-repeat;
+                background-size: contain;
+                background-position: center center;
+                background-image: url('../images/icons/light-theme/screenshare-off-idle-light.svg');
+                filter: saturate(0) blur(0);
+                opacity: 0;
+                transition: .1s ease-in-out;
+                z-index: -1;
+                flex: 0 1 36px;
+            }
+
+            &:hover:before, &:focus:before {
+                filter: saturate(0.4) blur(5px);
+                opacity: 0.6;
+                transition: .1s ease-in-out;
+            }
+
+            &:active {
+                background-image: url('../images/icons/light-theme/screenshare-on-click-light.svg');
+            }
+        }
+
+        &--dark-theme {
+            background-image: url('../images/icons/dark-theme/screenshare-off-idle-dark.svg');
+
+            &:not(:focus):hover {
+                background-image: url('../images/icons/dark-theme/screenshare-off-hover-dark.svg');
+            }
+        }
+    }
+}
+
 .toggleSettingsButton {
     &--light-theme {
         background-image: url('../images/icons/light-theme/devices-idle-light.svg');
@@ -573,6 +677,7 @@ $bottom-controls-container-height: 72px;
             filter: saturate(0) blur(0);
             opacity: 0;
             transition: .1s ease-in-out;
+            flex: 0 1 36px;
         }
 
         &:hover:before, &:focus:before {
@@ -685,6 +790,7 @@ $bottom-controls-container-height: 72px;
 .settingsMenu {
     position: fixed;
     width: 340px;
+    max-width: calc(100vw - 40px);
     bottom: $bottom-controls-container-height;
     left: 0;
     display: flex;
@@ -1065,6 +1171,7 @@ $bottom-controls-container-height: 72px;
     align-items: center;
     overflow-y: auto;
     scrollbar-width: thin;
+    max-width: 100vw;
 
     &::-webkit-scrollbar {
         width: 12px;
@@ -1186,6 +1293,7 @@ $bottom-controls-container-height: 72px;
     &__customizeContainer {
         width: calc(100% - 48px);
         display: flex;
+        flex-wrap: wrap;
         margin: 8px 24px 12px 24px;
         align-items: flex-start;
         border-image: none;
@@ -1516,8 +1624,11 @@ $bottom-controls-container-height: 72px;
 }
 
 .switch input { 
-    width: 48px;
-    height: 26px;
+    width: 44px;
+    height: 22px;
+    position: relative;
+    top: 2px;
+    left: 2px;
 }
 
 .slider {
@@ -1591,7 +1702,8 @@ input:checked+.slider:before {
     user-select: none;
 }
 
-.zoomInContainer {
+.zoomInContainer,
+.zoomOutContainer {
     margin: 0 0 6px 0;
 }
 
@@ -1644,29 +1756,126 @@ input:checked+.slider:before {
     }
 }
 
+// Keyboard by Zrin from the Noun Project
+.showKeyboardShortcutsButton {
+    // If the user is using a coarse pointer as their primary input device,
+    // don't show the keyboard shortcuts button.
+    @media (pointer: coarse) {
+        display: none;
+    }
+
+    &--light-theme {
+        background-image: url('../images/icons/light-theme/button-keyboard-idle.svg');
+
+        &:hover {
+            background-image: url('../images/icons/light-theme/button-keyboard-hover.svg');
+        }
+    }
+}
+
+.keyboardShortcutsModal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.75);
+    color: #FFFFFF;
+    border-radius: 8px;
+    padding: 16px 24px 24px 24px;
+    width: 312px;
+    pointer-events: all;
+    max-height: 80vh;
+    overflow-y: auto;
+    scrollbar-color: map-get(themes.$light-theme, scrollbar-thumb) "transparent";
+
+    &::-webkit-scrollbar {
+        width: 12px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: "transparent";
+        margin: 8px 0;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: map-get(themes.$light-theme, scrollbar-thumb);
+        border: 1px solid map-get(themes.$light-theme, scrollbar-track);
+        border-radius: 16px;
+    }
+}
+
+.keyboardShortcut {
+    margin: 0 0 8px 0;
+    display: inline-block;
+    font-size: 16px;
+
+    &__header {
+        font-size: 20px;
+        font-family: "Graphik", "Helvetica", "Arial", sans-serif;
+        margin: 0;
+    }
+
+    &__categoryHeader {
+        font-size: 18px;
+        font-family: "Graphik", "Helvetica", "Arial", sans-serif;
+        margin: 12px 0 8px 0;
+    }
+
+    &__key {
+        display: inline-block;
+        min-width: 16px;
+        min-height: 16px;
+        font-size: 16px;
+        padding: 4px;
+        background-color: #CFCFCF;
+        border-radius: 4px;
+        color: #000000;
+        margin: 0 4px 0 0;
+        font-family: 'Graphik-Bold', 'Helvetica', 'Arial', sans-serif;
+    }
+
+    &__keyDescription {
+        margin: 0 0 0 8px;
+    }
+}
+
 .bottomControlsContainer {
     display: flex;
     align-items: center;
     height: 100%;
+    width: 100%;
 }
 
 .myProfileContainer {
     display: flex;
     justify-content: center;
-    flex-direction: column;
-    flex-wrap: wrap;
-    width: 140px;
+    flex-direction: row;
+    flex-wrap: nowrap;
     height: 100%;
-    margin: 0 12px 0 24px;
+    flex: 0 0 auto;
+
+    @include media(">phone") {
+        margin: 0 8px 0 24px;
+    }
+
+    @include media("<=phone") {
+        margin: 0 0 0 8px;
+    }
+}
+
+.myProfileTextContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
 }
 
 .myProfileImage {
     &Container {
-        flex-basis: 100%;
         display: flex;
         justify-content: center;
         align-items: center;
         margin: 0 7px 0 0;
+        width: 39px;
     }
 
     height: 39px;
@@ -1688,6 +1897,10 @@ input:checked+.slider:before {
     white-space: nowrap;
     text-overflow: ellipsis;
     width: calc(140px - 38px - 7px);
+
+    @include media("<=phone") {
+        display: none;
+    }
 }
 
 .editMyProfileButton {
@@ -1701,6 +1914,10 @@ input:checked+.slider:before {
     text-align: left;
     border: none;
     width: fit-content;
+
+    @include media("<=phone") {
+        display: none;
+    }
 
     &--light-theme {
         color: map-get(themes.$light-theme, edit-my-profile-link);

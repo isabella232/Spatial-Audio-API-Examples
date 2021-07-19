@@ -1,12 +1,13 @@
 import { OrientationEuler3D, Point3D } from "hifi-spatial-audio";
 import { userDataController, connectionController, roomController, physicsController, pathsController, uiController, twoDimensionalRenderer, webSocketConnectionController, watchPartyController, howlerController, uiThemeController, accessibilityController } from "..";
+import { VideoStreamingStates } from "../../../shared/shared";
 import { Path, Waypoint } from "../ai/PathsController";
 import { AVATAR, PHYSICS, UI } from "../constants/constants";
 import { chairSounds } from "../sounds/LocalSoundsController";
 import { SpatialAudioSeat, SpatialStandupRoom, SpatialStandupRoomType } from "../ui/RoomController";
 import { DataToTransmitToHiFi, EasingFunctions, Utilities } from "../utilities/Utilities";
-import { MyAvatarEars } from "./MyAvatarEars";
 
+declare var HIFI_SPACE_NAME: string;
 declare var HIFI_PROVIDED_USER_ID: string;
 
 interface TempUserData {
@@ -46,7 +47,7 @@ export interface UserData {
     stereoInput?: boolean;
     currentWatchPartyRoomName?: string;
     tempData?: TempUserData;
-    isStreamingVideo?: boolean;
+    isStreamingVideo?: VideoStreamingStates;
 }
 
 export enum MyAvatarModes {
@@ -96,7 +97,7 @@ class MyAvatar {
             noiseSuppressionEnabled: false,
             stereoInput: false,
             currentWatchPartyRoomName: undefined,
-            isStreamingVideo: false,
+            isStreamingVideo: VideoStreamingStates.NONE,
             tempData: {},
         };
 
@@ -130,7 +131,28 @@ class MyAvatar {
         }
     }
 
-    positionSelfInRoom(targetRoomName: string) {
+    async requestNewSeat(targetSeat: SpatialAudioSeat) {
+        console.log(`Requesting new seat with ID \`${targetSeat.seatID}\`...`)
+        let queryURL = `/${HIFI_SPACE_NAME}/requestNewSeat?seatID=${targetSeat.seatID}&visitIDHash=${this.myUserData.visitIDHash}`;
+        let queryResponseJSON;
+        try {
+            let queryResponse = await fetch(queryURL);
+            queryResponseJSON = await queryResponse.json();
+        } catch (e) {
+            console.error(`Seat request \`${targetSeat.seatID}\` denied! Couldn't query seat via URL \`${queryURL}\`! Error:\n${e}`);
+            return false;
+        }
+
+        if (queryResponseJSON.requestGranted) {
+            console.log(`Seat request \`${targetSeat.seatID}\` granted!`);
+            return true;
+        }
+
+        console.warn(`Seat request \`${targetSeat.seatID}\` denied!`)
+        return false;
+    }
+
+    async positionSelfInRoom(targetRoomName: string) {
         if (pathsController.currentPath) {
             return;
         }
@@ -169,17 +191,33 @@ class MyAvatar {
             console.warn(`\`positionSelfInRoom()\`: Couldn't find any open seats in any room!`);
             return;
         }
+
+        let canMoveToNewSeat = await this.requestNewSeat(newSeat);
+        if (!canMoveToNewSeat) {
+            this.positionSelfInRoom(targetRoomName);
+            return;
+        }
+
         console.log(`Found an open spot on seat \`${newSeat.seatID}\` in room ${newSeat.room.name} at ${JSON.stringify(newSeat.position)} with orientation ${JSON.stringify(newSeat.orientation)}.`);
         this.moveToNewSeat(newSeat);
     }
 
-    moveToNewSeat(targetSeat: SpatialAudioSeat) {
+    async moveToNewSeat(targetSeat: SpatialAudioSeat) {
         if (!userDataController.myAvatar) {
             console.warn(`Can't move to new seat - \`userDataController.myAvatar\` is falsey!`);
             return;
         }
 
         let myUserData = userDataController.myAvatar.myUserData;
+
+
+        let canMoveToNewSeat = await this.requestNewSeat(targetSeat);
+        if (!canMoveToNewSeat) {
+            console.error(`Request to move to new seat deined; please try again or choose a new seat.`);
+            return;
+        }
+
+
         let dataToTransmit: DataToTransmitToHiFi = {};
 
         myUserData.motionStartTimestamp = undefined;
@@ -360,8 +398,6 @@ class MyAvatar {
 
         roomController.updateRoomList();
 
-        userDataController.myAvatarEars.onMouthMovedToNewSeat(targetSeat);
-
         if (myUserData.currentRoom.roomType === SpatialStandupRoomType.WatchParty) {
             document.querySelector(".watchPartyControlsContainer").classList.remove("displayNone");
         } else {
@@ -414,12 +450,10 @@ class MyAvatar {
 export class UserDataController {
     allOtherUserData: Array<UserData>;
     myAvatar: MyAvatar;
-    myAvatarEars: MyAvatarEars;
 
     constructor() {
         this.allOtherUserData = [];
         this.myAvatar = new MyAvatar();
-        this.myAvatarEars = new MyAvatarEars();
     }
 
     init() {

@@ -1,6 +1,7 @@
 import { accessibilityController, avDevicesController, connectionController, howlerController, roomController, signalsController, twoDimensionalRenderer, uiController, userDataController, userInputController, videoController, watchPartyController } from "..";
 import { SoundParams, HowlerController, chairSounds } from "../sounds/LocalSoundsController";
 import { SignalParams } from "../ui/SignalsController";
+import { VideoStreamingStates } from "../../../shared/shared";
 import { Utilities } from "../utilities/Utilities";
 declare var HIFI_SPACE_NAME: string;
 declare var APP_MODE: string;
@@ -20,7 +21,7 @@ interface WebSocketParticipantData {
     hiFiGainSliderValue: string;
     volumeThreshold: number;
     currentWatchPartyRoomName: string;
-    isStreamingVideo: boolean;
+    isStreamingVideo: VideoStreamingStates;
 }
 
 export class WebSocketConnectionController {
@@ -42,7 +43,7 @@ export class WebSocketConnectionController {
         });
 
         this.socket.on("onParticipantsAddedOrEdited", (participantArray: Array<WebSocketParticipantData>) => {
-            console.log(`Retrieved information about ${participantArray.length} participant(s) from the server:\n${JSON.stringify(participantArray)}`);
+            console.log(`Retrieved information about ${participantArray.length} participant(s) from the server. Processing:\n${JSON.stringify(participantArray)}`);
             participantArray.forEach((participant) => {
                 let {
                     visitIDHash,
@@ -125,19 +126,20 @@ export class WebSocketConnectionController {
                             watchPartyController.joinWatchParty(userDataController.myAvatar.myUserData.currentRoom.name);
                         }
                     }
-                    if (typeof (isStreamingVideo) === "boolean") {
+                    if (isStreamingVideo !== undefined) {
                         localUserData.isStreamingVideo = isStreamingVideo;
 
-                        if (localUserData.isStreamingVideo && !videoController.twilioRoom && !videoController.connectingToTwilio) {
+                        // If we're watching someone's screenshare full screen, and that person stops
+                        // sharing their screen, hide the full-screen screenshare UI.
+                        if (localUserData.isStreamingVideo !== VideoStreamingStates.SCREENSHARE && uiController.screenShareContainer.querySelector(`#${localUserData.providedUserID}`)) {
+                            uiController.hideScreenShareUI();
+                        }
+
+                        if (localUserData.isStreamingVideo !== VideoStreamingStates.NONE && !videoController.twilioRoom && !videoController.connectingToTwilio) {
                             console.log("At least one user in this Room is streaming video. Connecting to Twilio...");
                             videoController.connectToTwilio();
                         } else if (videoController.twilioRoom) {
-                            let anyoneIsStreaming = !!userDataController.allOtherUserData.find((userData) => { return userData.isStreamingVideo === true; });
-                            anyoneIsStreaming = anyoneIsStreaming || userDataController.myAvatar.myUserData.isStreamingVideo;
-                            if (!anyoneIsStreaming) {
-                                console.log("Nobody in this Room is streaming video. Disconnecting from Twilio...");
-                                videoController.disconnectFromTwilio();
-                            }
+                            videoController.maybeDisconnectFromTwilio();
                         }
                     }
 
@@ -145,7 +147,7 @@ export class WebSocketConnectionController {
                         howlerController.playSound({ src: chairSounds[Math.floor(Math.random() * chairSounds.length)], randomSoundRate: true, positionM: localUserData.positionCurrent, volume: 0.3 });
                     }
                     
-                    console.log(`Updated participant:\nVisit ID Hash \`${localUserData.visitIDHash}\`:\nDisplay Name: \`${displayName}\`\nColor: ${colorHex}\nprofileImageURL: ${profileImageURL}\nisAudioInputMuted: ${isAudioInputMuted}\nCurrent Seat ID: ${localUserData.currentSeat ? localUserData.currentSeat.seatID : "undefined"}\nCurrent Room Name: ${localUserData.currentRoom ? localUserData.currentRoom.name : "undefined"}\nechoCancellationEnabled: ${echoCancellationEnabled}\nagcEnabled: ${agcEnabled}\nnsEnabled: ${noiseSuppressionEnabled}\nhiFiGainSliderValue: ${hiFiGainSliderValue}\nvolumeThreshold:${volumeThreshold}\ncurrentWatchPartyRoomName:${currentWatchPartyRoomName}\nisStreamingVideo:${isStreamingVideo}\n`);
+                    console.log(`Updated participant:\nVisit ID Hash \`${localUserData.visitIDHash}\`:\nDisplay Name: \`${displayName}\`\nColor: ${colorHex}\nprofileImageURL: ${profileImageURL}\nisAudioInputMuted: ${isAudioInputMuted}\nCurrent Seat ID: ${localUserData.currentSeat ? localUserData.currentSeat.seatID : "undefined"}\nCurrent Room Name: ${localUserData.currentRoom ? localUserData.currentRoom.name : "undefined"}\nechoCancellationEnabled: ${localUserData.echoCancellationEnabled}\nagcEnabled: ${localUserData.agcEnabled}\nnsEnabled: ${localUserData.noiseSuppressionEnabled}\nhiFiGainSliderValue: ${localUserData.hiFiGainSliderValue}\nvolumeThreshold:${localUserData.volumeThreshold}\ncurrentWatchPartyRoomName:${localUserData.currentWatchPartyRoomName}\nisStreamingVideo:${localUserData.isStreamingVideo}\n`);
                 } else if (visitIDHash && displayName) {
                     localUserData = {
                         visitIDHash,

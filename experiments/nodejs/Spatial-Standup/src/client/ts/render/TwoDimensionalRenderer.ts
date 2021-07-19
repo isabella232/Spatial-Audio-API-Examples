@@ -9,7 +9,9 @@ import SeatIconIdle from '../../images/seat-idle.png';
 import SeatIconHover from '../../images/seat-hover.png';
 import TableImage from '../../images/table.png';
 import AvatarMuted from '../../images/avatar-muted.png';
+import AvatarScreenSharingImage from '../../images/avatar-screen-sharing.png';
 import { Point3D } from "hifi-spatial-audio";
+import { VideoStreamingStates } from "../../../shared/shared";
 
 const seatIconIdle = new Image();
 seatIconIdle.src = SeatIconIdle;
@@ -19,6 +21,8 @@ const tableImage = new Image();
 tableImage.src = TableImage;
 const avatarMutedImage = new Image();
 avatarMutedImage.src = AvatarMuted;
+const avatarScreenSharingImage = new Image();
+avatarScreenSharingImage.src = AvatarScreenSharingImage;
 
 export class TwoDimensionalRenderer {
     normalModeCanvas: HTMLCanvasElement;
@@ -142,7 +146,7 @@ export class TwoDimensionalRenderer {
         normalModeCTX.closePath();
 
         normalModeCTX.rotate(-amtToRotateAvatar);
-        
+
         if (userData.profileImageEl && userData.profileImageEl.complete) {
             let amtToRotateProfileImage = this.canvasRotationDegrees * Math.PI / 180;
             normalModeCTX.rotate(amtToRotateProfileImage);
@@ -162,28 +166,94 @@ export class TwoDimensionalRenderer {
         }
     }
 
-    drawAvatarVideo({ userData }: { userData: UserData }) {
-        if (videoController.providedUserIDToVideoElementMap.has(userData.providedUserID)) {
-            let normalModeCTX = this.normalModeCTX;
-            let avatarRadiusM = AVATAR.RADIUS_M;
-            let avatarRadiusPX = avatarRadiusM * physicsController.pxPerMCurrent;
+    drawAvatarIsScreenSharing({ userData }: { userData: UserData }) {
+        if (userData.isStreamingVideo !== VideoStreamingStates.SCREENSHARE || !avatarScreenSharingImage.complete) {
+            return;
+        }
 
-            let amtToRotateVideo = this.canvasRotationDegrees * Math.PI / 180;
-            normalModeCTX.rotate(amtToRotateVideo);
+        let normalModeCTX = this.normalModeCTX;
+        let pxPerM = physicsController.pxPerMCurrent;
+
+        let amtToRotateAvatarLabel = this.canvasRotationDegrees * Math.PI / 180;
+        normalModeCTX.rotate(amtToRotateAvatarLabel);
+
+        let avatarRadiusM = AVATAR.RADIUS_M;
+        let avatarRadiusPX = avatarRadiusM * pxPerM;
+        let screenSharingIconRadiusPX = UI.SCREEN_SHARE_ICON_RADIUS_M * pxPerM;
+
+        normalModeCTX.translate(-avatarRadiusPX + screenSharingIconRadiusPX, avatarRadiusPX - screenSharingIconRadiusPX);
+        
+        if (userInputController.highlightedScreenShareIconUserData && userInputController.highlightedScreenShareIconUserData.visitIDHash === userData.visitIDHash) {
+            let radius = (UI.SCREEN_SHARE_ICON_RADIUS_M + UI.SCREEN_SHARE_HOVER_HIGHLIGHT_RADIUS_ADDITION_M) * pxPerM
+            normalModeCTX.translate(UI.SCREEN_SHARE_ICON_RADIUS_M * pxPerM, radius / 2 + UI.SCREEN_SHARE_HOVER_HIGHLIGHT_RADIUS_ADDITION_M / 2 * pxPerM);
+            normalModeCTX.beginPath();
+            normalModeCTX.arc(0, 0, radius, 0, 2 * Math.PI);
+            let grad = normalModeCTX.createRadialGradient(0, 0, 0, 0, 0, (UI.SCREEN_SHARE_ICON_RADIUS_M + UI.SCREEN_SHARE_HOVER_HIGHLIGHT_RADIUS_ADDITION_M) * pxPerM);
+            grad.addColorStop(0.0, UI.HOVER_GLOW_HEX);
+            grad.addColorStop(1.0, UI.HOVER_GLOW_HEX + "00");
+            normalModeCTX.fillStyle = grad;
+            normalModeCTX.fill();
+            normalModeCTX.closePath();
+            normalModeCTX.translate(-UI.SCREEN_SHARE_ICON_RADIUS_M * pxPerM, -(radius / 2 + UI.SCREEN_SHARE_HOVER_HIGHLIGHT_RADIUS_ADDITION_M / 2 * pxPerM));
+        }
+        normalModeCTX.translate(0, UI.SCREEN_SHARING_SHADOW_HEIGHT_PX);
+        normalModeCTX.drawImage(avatarScreenSharingImage, 0, 0, screenSharingIconRadiusPX * 2, screenSharingIconRadiusPX * 2);
+        normalModeCTX.translate(0, -UI.SCREEN_SHARING_SHADOW_HEIGHT_PX);
+        
+
+        normalModeCTX.translate(-1 * (-avatarRadiusPX + screenSharingIconRadiusPX), -1 * (avatarRadiusPX - screenSharingIconRadiusPX));
+
+        normalModeCTX.rotate(-amtToRotateAvatarLabel);
+    }
+
+    drawAvatarVideo({ userData }: { userData: UserData }) {
+        if (!videoController.providedUserIDToVideoElementMap.has(userData.providedUserID) || (userData.isStreamingVideo === VideoStreamingStates.SCREENSHARE && userInputController.highlightedUserData && userInputController.highlightedUserData.visitIDHash === userData.visitIDHash)) {
+            return;
+        }
+
+        let normalModeCTX = this.normalModeCTX;
+        let avatarRadiusM = AVATAR.RADIUS_M;
+        let avatarRadiusPX = avatarRadiusM * physicsController.pxPerMCurrent;
+
+        let amtToRotateVideo = this.canvasRotationDegrees * Math.PI / 180;
+        normalModeCTX.rotate(amtToRotateVideo);
+
+        let videoEl = videoController.providedUserIDToVideoElementMap.get(userData.providedUserID);
+
+        if (userData.isStreamingVideo === VideoStreamingStates.CAMERA) {
             normalModeCTX.save();
             normalModeCTX.clip();
             if (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash) {
                 normalModeCTX.scale(-1, 1);
             }
-            normalModeCTX.drawImage(videoController.providedUserIDToVideoElementMap.get(userData.providedUserID), -avatarRadiusPX, -avatarRadiusPX, avatarRadiusPX * 2, avatarRadiusPX * 2);
+            normalModeCTX.drawImage(videoEl, -avatarRadiusPX, -avatarRadiusPX, avatarRadiusPX * 2, avatarRadiusPX * 2);
             normalModeCTX.restore();
-            normalModeCTX.rotate(-amtToRotateVideo);
+        } else if (userData.isStreamingVideo === VideoStreamingStates.SCREENSHARE) {
+            normalModeCTX.fillStyle = userData.colorHex || Utilities.hexColorFromString(userData.visitIDHash);
+            let newWidth = avatarRadiusPX * UI.SCREEN_SHARE_BG_ASPECT_RATIO * 2;
+            normalModeCTX.save();
+            normalModeCTX.clip();
+
+            normalModeCTX.beginPath();
+            normalModeCTX.rect(-avatarRadiusPX, -avatarRadiusPX, avatarRadiusPX * 2, avatarRadiusPX * 2);
+            normalModeCTX.fill();
+            normalModeCTX.closePath();
+
+            const {
+                offsetX,
+                offsetY,
+                width,
+                height
+            } = Utilities.fit(false, newWidth, avatarRadiusPX * 2, videoEl.videoWidth, videoEl.videoHeight);
+            normalModeCTX.drawImage(videoEl, -newWidth / 2 + offsetX, -avatarRadiusPX + offsetY, width, height);
+            normalModeCTX.restore();
         }
+        normalModeCTX.rotate(-amtToRotateVideo);
     }
 
     drawAvatarLabel({ userData }: { userData: UserData }) {
         // Don't draw the avatar label if we're drawing that avatar's video.
-        if (videoController.providedUserIDToVideoElementMap.has(userData.providedUserID) || userData.profileImageEl) {
+        if ((videoController.providedUserIDToVideoElementMap.has(userData.providedUserID) || userData.profileImageEl) && !(!userData.profileImageEl && userData.isStreamingVideo === VideoStreamingStates.SCREENSHARE && userInputController.highlightedUserData && userInputController.highlightedUserData.visitIDHash === userData.visitIDHash)) {
             return;
         }
 
@@ -211,7 +281,7 @@ export class TwoDimensionalRenderer {
     }
 
     drawAvatarMuted({ userData }: { userData: UserData }) {
-        if (!userData.isAudioInputMuted) {
+        if (!(userData.isAudioInputMuted && avatarMutedImage.complete)) {
             return;
         }
 
@@ -289,6 +359,7 @@ export class TwoDimensionalRenderer {
         this.drawAvatarVideo({ userData });
         this.drawAvatarLabel({ userData });
         this.drawAvatarMuted({ userData });
+        this.drawAvatarIsScreenSharing({ userData });
 
         if (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash && !uiController.hasCompletedTutorial) {
             this.drawTutorialText();
@@ -300,7 +371,7 @@ export class TwoDimensionalRenderer {
     drawTableOrRoomGraphic(room: SpatialStandupRoom) {
         let normalModeCTX = this.normalModeCTX;
         let pxPerM = physicsController.pxPerMCurrent;
-        
+
         normalModeCTX.translate(room.roomCenter.x * pxPerM, room.roomCenter.z * pxPerM);
         let amtToRotateRoom = room.roomYawOrientationDegrees * Math.PI / 180;
         normalModeCTX.rotate(amtToRotateRoom);
@@ -316,7 +387,7 @@ export class TwoDimensionalRenderer {
         }
 
         normalModeCTX.translate((room.seatingCenter.x - room.roomCenter.x) * pxPerM, (room.seatingCenter.z - room.roomCenter.z) * pxPerM);
-        
+
         if (!usingRoomImage) {
             let tableRadiusPX = (room.seatingRadiusM - AVATAR.RADIUS_M * AVATAR.MAX_VOLUME_DB_AVATAR_RADIUS_MULTIPLIER) * pxPerM;
 
@@ -419,27 +490,27 @@ export class TwoDimensionalRenderer {
 
         const normalModeCTX = this.normalModeCTX;
         const pxPerM = physicsController.pxPerMCurrent;
-    
+
         particleController.activeParticles.forEach((particle) => {
             if (!particle.currentWorldPositionM.x || !particle.currentWorldPositionM.z ||
                 !particle.dimensionsM.x || !particle.dimensionsM.z ||
                 !particle.image.complete) {
                 return;
-            }    
+            }
             normalModeCTX.translate(particle.currentWorldPositionM.x * pxPerM, particle.currentWorldPositionM.z * pxPerM);
             let amtToRotateParticle = this.canvasRotationDegrees * Math.PI / 180;
             normalModeCTX.rotate(amtToRotateParticle);
-    
+
             let oldAlpha = normalModeCTX.globalAlpha;
             normalModeCTX.globalAlpha = particle.opacity;
-    
+
             normalModeCTX.drawImage(
                 particle.image,
                 -particle.dimensionsM.x * pxPerM / 2,
                 -particle.dimensionsM.z * pxPerM / 2,
                 particle.dimensionsM.x * pxPerM,
                 particle.dimensionsM.z * pxPerM);
-    
+
             normalModeCTX.globalAlpha = oldAlpha;
             normalModeCTX.rotate(-amtToRotateParticle);
             normalModeCTX.translate(-particle.currentWorldPositionM.x * pxPerM, -particle.currentWorldPositionM.z * pxPerM);

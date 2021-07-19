@@ -175,6 +175,7 @@ export class WatchPartyController {
 
         roomController.hideRoomList();
         uiController.hideAvatarContextMenu();
+        uiController.hideKeyboardShortcutsModal();
         userInputController.hideSettingsMenu();
 
         let target = <HTMLElement>event.target;

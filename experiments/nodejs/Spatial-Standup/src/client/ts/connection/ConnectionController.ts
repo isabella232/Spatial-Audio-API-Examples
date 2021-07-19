@@ -41,6 +41,13 @@ export class ConnectionController {
 
     async setNewInputAudioMediaStream(): Promise<MediaStream> {
         return new Promise(async (resolve, reject) => {
+            if (avDevicesController.inputAudioMediaStream) {
+                let tracks = avDevicesController.inputAudioMediaStream.getTracks();
+                tracks.forEach((track) => {
+                    track.stop();
+                });
+            }
+
             // Get the audio media stream associated with the user's default audio input device.
             try {
                 console.log(`Calling \`getUserMedia()\` with the following audio constraints:\n${JSON.stringify(avDevicesController.audioConstraints)}`);
