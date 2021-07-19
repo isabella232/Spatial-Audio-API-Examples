@@ -470,8 +470,9 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
             avatarContextMenu__colorPickerContainer.addEventListener("click", (e) => {
                 e.stopPropagation();
             });
-            let avatarContextMenu__closeColorPickerButton = document.createElement("div");
+            let avatarContextMenu__closeColorPickerButton = document.createElement("button");
             avatarContextMenu__closeColorPickerButton.classList.add("avatarContextMenu__closeButton");
+            avatarContextMenu__closeColorPickerButton.setAttribute("aria-label", "Close Color Picker");
             avatarContextMenu__closeColorPickerButton.addEventListener("click", (e) => {
                 avatarContextMenu__colorPickerContainer.classList.add("displayNone");
             });
@@ -508,6 +509,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
             chooseColorButton.classList.add("avatarContextMenu__chooseColorButton");
             chooseColorButton.addEventListener('click', (e) => {
                 avatarContextMenu__colorPickerContainer.classList.remove("displayNone");
+                avatarContextMenu__closeColorPickerButton.focus();
                 e.stopPropagation();
             });
             let chooseColorButtonImage = document.createElement("img");
