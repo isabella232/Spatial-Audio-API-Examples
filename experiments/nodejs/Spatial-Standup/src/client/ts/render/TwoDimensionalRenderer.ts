@@ -253,7 +253,7 @@ export class TwoDimensionalRenderer {
 
     drawAvatarLabel({ userData }: { userData: UserData }) {
         // Don't draw the avatar label if we're drawing that avatar's video.
-        if (videoController.providedUserIDToVideoElementMap.has(userData.providedUserID) || userData.profileImageEl) {
+        if ((videoController.providedUserIDToVideoElementMap.has(userData.providedUserID) || userData.profileImageEl) && !(!userData.profileImageEl && userData.isStreamingVideo === VideoStreamingStates.SCREENSHARE && userInputController.highlightedUserData && userInputController.highlightedUserData.visitIDHash === userData.visitIDHash)) {
             return;
         }
 
