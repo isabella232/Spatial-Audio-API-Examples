@@ -173,10 +173,12 @@ export class ServerAnalyticsController {
     }
 
     async logEvent(category: ServerAnalyticsEventCategory, details?: any) {
-        let timestamp = new Date();
+        let dateObj = new Date();
         let detailsText: string;
         let e: any;
-        let googleSheetsDetails: Array<string> = [Date.now().toString()];
+        let timestamp = Date.now().toString();
+        let googleSheetsDetails: Array<string> = [timestamp];
+        let usedCustomGoogleSheetsLogger = false;
 
         switch (category) {
             case ServerAnalyticsEventCategory.SlackBotAdded:
@@ -193,8 +195,10 @@ export class ServerAnalyticsController {
                 e = <SlackBotAdminInfoCollectedEvent>details;
                 detailsText = JSON.stringify(e.info);
                 e.info.forEach((admin: any) => {
-                    googleSheetsDetails.push(admin.team_id, admin.id, admin.real_name, admin.profile ? admin.profile.email : "unknown email");
+                    googleSheetsDetails = [timestamp, admin.team_id, admin.id, admin.real_name, admin.profile ? admin.profile.email : "unknown email"];
+                    this.logEventGoogleSheets(category, googleSheetsDetails);
                 });
+                usedCustomGoogleSheetsLogger = true;
                 break;
             case ServerAnalyticsEventCategory.SlackBotUsed:
                 e = <SlackBotUsedEvent>details;
@@ -224,19 +228,21 @@ export class ServerAnalyticsController {
         }
 
         if (detailsText) {
-            console.log(`Analytic @ ${timestamp}: ${category}: ${detailsText}`);
+            console.log(`Analytic @ ${dateObj}: ${category}: ${detailsText}`);
             let insertText = `INSERT INTO analytics.events(timestamp, category, details) VALUES ($1, $2, $3);`;
             if (this.postgresClient) {
-                await this.postgresClient.query(insertText, [timestamp, category, detailsText]);
+                await this.postgresClient.query(insertText, [dateObj, category, detailsText]);
             }
         } else {
-            console.log(`Analytic @ ${timestamp}: ${category}`);
+            console.log(`Analytic @ ${dateObj}: ${category}`);
             let insertText = `INSERT INTO analytics.events(timestamp, category) VALUES ($1, $2);`;
             if (this.postgresClient) {
-                await this.postgresClient.query(insertText, [timestamp, category]);
+                await this.postgresClient.query(insertText, [dateObj, category]);
             }
         }
 
-        this.logEventGoogleSheets(category, googleSheetsDetails);
+        if (!usedCustomGoogleSheetsLogger) {
+            this.logEventGoogleSheets(category, googleSheetsDetails);
+        }
     }
 }
