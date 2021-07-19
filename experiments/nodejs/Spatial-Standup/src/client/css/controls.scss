@@ -1758,6 +1758,12 @@ input:checked+.slider:before {
 
 // Keyboard by Zrin from the Noun Project
 .showKeyboardShortcutsButton {
+    // If the user is using a coarse pointer as their primary input device,
+    // don't show the keyboard shortcuts button.
+    @media (pointer: coarse) {
+        display: none;
+    }
+
     &--light-theme {
         background-image: url('../images/icons/light-theme/button-keyboard-idle.svg');
 
