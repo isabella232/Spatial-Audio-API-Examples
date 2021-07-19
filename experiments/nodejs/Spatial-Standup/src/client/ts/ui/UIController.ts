@@ -465,33 +465,6 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
             });
             avatarContextMenu__avatarRepresentation.appendChild(avatarContextMenu__avatarCircle);
 
-            let avatarContextMenu__colorPickerContainer = document.createElement("div");
-            avatarContextMenu__colorPickerContainer.classList.add("avatarContextMenu__colorPickerContainer", "displayNone");
-            avatarContextMenu__colorPickerContainer.addEventListener("click", (e) => {
-                e.stopPropagation();
-            });
-            let avatarContextMenu__closeColorPickerButton = document.createElement("button");
-            avatarContextMenu__closeColorPickerButton.classList.add("avatarContextMenu__closeButton");
-            avatarContextMenu__closeColorPickerButton.setAttribute("aria-label", "Close Color Picker");
-            avatarContextMenu__closeColorPickerButton.addEventListener("click", (e) => {
-                avatarContextMenu__colorPickerContainer.classList.add("displayNone");
-            });
-            avatarContextMenu__colorPickerContainer.appendChild(avatarContextMenu__closeColorPickerButton);
-            this.avatarContextMenu.appendChild(avatarContextMenu__colorPickerContainer);
-            this.avatarContextMenu.addEventListener("click", (e) => {
-                avatarContextMenu__colorPickerContainer.classList.add("displayNone");
-            });
-
-            const colorPicker = new ColorPicker({
-                el: avatarContextMenu__colorPickerContainer,
-                color: userData.colorHex,
-                width: 200,
-                height: 200
-            });
-            colorPicker.onChange((e: string) => {
-                userDataController.myAvatar.onMyColorHexChanged(e);
-            });
-
             if (userData.profileImageURL && userData.profileImageURL.length > 0) {
                 let removeProfileImageButton = document.createElement("button");
                 removeProfileImageButton.setAttribute("aria-label", "Remove Profile Photo");
@@ -562,6 +535,33 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
 
             this.avatarContextMenu.appendChild(displayName);
             this.avatarContextMenu.appendChild(avatarContextMenu__customizeContainer);
+
+            let avatarContextMenu__colorPickerContainer = document.createElement("div");
+            avatarContextMenu__colorPickerContainer.classList.add("avatarContextMenu__colorPickerContainer", "displayNone");
+            avatarContextMenu__colorPickerContainer.addEventListener("click", (e) => {
+                e.stopPropagation();
+            });
+            let avatarContextMenu__closeColorPickerButton = document.createElement("button");
+            avatarContextMenu__closeColorPickerButton.classList.add("avatarContextMenu__closeButton");
+            avatarContextMenu__closeColorPickerButton.setAttribute("aria-label", "Close Color Picker");
+            avatarContextMenu__closeColorPickerButton.addEventListener("click", (e) => {
+                avatarContextMenu__colorPickerContainer.classList.add("displayNone");
+            });
+            avatarContextMenu__colorPickerContainer.appendChild(avatarContextMenu__closeColorPickerButton);
+            this.avatarContextMenu.appendChild(avatarContextMenu__colorPickerContainer);
+            this.avatarContextMenu.addEventListener("click", (e) => {
+                avatarContextMenu__colorPickerContainer.classList.add("displayNone");
+            });
+
+            const colorPicker = new ColorPicker({
+                el: avatarContextMenu__colorPickerContainer,
+                color: userData.colorHex,
+                width: 200,
+                height: 200
+            });
+            colorPicker.onChange((e: string) => {
+                userDataController.myAvatar.onMyColorHexChanged(e);
+            });
         } else {
             displayName = document.createElement("h1");
             displayName.classList.add("avatarContextMenu__displayName");
