@@ -99,6 +99,7 @@ export class UIThemeController {
         this.addThemedElementFromClassName("editMyProfileButton");
         this.addThemedElementFromClassName("zoomInButton");
         this.addThemedElementFromClassName("zoomOutButton");
+        this.addThemedElementFromClassName("showKeyboardShortcutsButton");
         this.addThemedElementFromClassName("bottomRightControlsContainer");
 
         this.themedElements.forEach((themedElementArray, baseClassName) => {

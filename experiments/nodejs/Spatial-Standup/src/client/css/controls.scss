@@ -1702,7 +1702,8 @@ input:checked+.slider:before {
     user-select: none;
 }
 
-.zoomInContainer {
+.zoomInContainer,
+.zoomOutContainer {
     margin: 0 0 6px 0;
 }
 
@@ -1752,6 +1753,82 @@ input:checked+.slider:before {
         &:hover {
             background-image: url('../images/icons/dark-theme/button-zoom-out-hover.svg');
         }
+    }
+}
+
+// Keyboard by Zrin from the Noun Project
+.showKeyboardShortcutsButton {
+    &--light-theme {
+        background-image: url('../images/icons/light-theme/button-keyboard-idle.svg');
+
+        &:hover {
+            background-image: url('../images/icons/light-theme/button-keyboard-hover.svg');
+        }
+    }
+}
+
+.keyboardShortcutsModal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.75);
+    color: #FFFFFF;
+    border-radius: 8px;
+    padding: 16px 24px 24px 24px;
+    width: 312px;
+    pointer-events: all;
+    max-height: 80vh;
+    overflow-y: auto;
+    scrollbar-color: map-get(themes.$light-theme, scrollbar-thumb) "transparent";
+
+    &::-webkit-scrollbar {
+        width: 12px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: "transparent";
+        margin: 8px 0;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: map-get(themes.$light-theme, scrollbar-thumb);
+        border: 1px solid map-get(themes.$light-theme, scrollbar-track);
+        border-radius: 16px;
+    }
+}
+
+.keyboardShortcut {
+    margin: 0 0 8px 0;
+    display: inline-block;
+    font-size: 16px;
+
+    &__header {
+        font-size: 20px;
+        font-family: "Graphik", "Helvetica", "Arial", sans-serif;
+        margin: 0;
+    }
+
+    &__categoryHeader {
+        font-size: 18px;
+        font-family: "Graphik", "Helvetica", "Arial", sans-serif;
+        margin: 12px 0 8px 0;
+    }
+
+    &__key {
+        display: inline-block;
+        min-width: 16px;
+        min-height: 16px;
+        font-size: 16px;
+        padding: 4px;
+        background-color: #CFCFCF;
+        border-radius: 4px;
+        color: #000000;
+        margin: 0 4px 0 0;
+        font-family: 'Graphik-Bold', 'Helvetica', 'Arial', sans-serif;
+    }
+
+    &__keyDescription {
+        margin: 0 0 0 8px;
     }
 }
 

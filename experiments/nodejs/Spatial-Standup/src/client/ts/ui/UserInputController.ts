@@ -154,12 +154,16 @@ export class UserInputController {
             case CONTROLS.DIGIT2_KEY_CODE:
                 signalsController.toggleActiveSignal(signalsController.supportedSignals.get("negative"));
                 break;
+            case CONTROLS.SLASH_KEY_CODE:
+                uiController.showKeyboardShortcutsModal();
+                break;
             case CONTROLS.ESC_KEY_CODE:
                 signalsController.setActiveSignal(undefined);
                 watchPartyController.leaveWatchParty();
                 uiController.hideAvatarContextMenu();
                 uiController.hideScreenShareUI();
                 roomController.hideRoomList();
+                uiController.hideKeyboardShortcutsModal();
                 this.hideSettingsMenu();
                 break;
         }
@@ -655,6 +659,7 @@ export class UserInputController {
 
         roomController.hideRoomList();
         uiController.hideAvatarContextMenu();
+        uiController.hideKeyboardShortcutsModal();
         this.hideSettingsMenu();
 
         let target = <HTMLElement>event.target;

@@ -13,6 +13,7 @@ export class UIController {
     playOverlay: HTMLElement;
     modalBackground: HTMLDivElement;
     avatarContextMenu: HTMLDivElement;
+    keyboardShortcutsModal: HTMLDivElement;
     hasCompletedTutorial: boolean;
     bottomRightControlsContainer: HTMLDivElement;
     screenShareContainer: HTMLDivElement;
@@ -23,6 +24,7 @@ export class UIController {
         this.initMainUI();
         this.initBottomRightControls();
         this.initContextMenu();
+        this.initKeyboardShortcutsModal();
         this.hideLoadingOverlay();
         this.initScreenShareUI();
 
@@ -91,6 +93,7 @@ export class UIController {
         bottomBar.classList.add("bottomBar", "displayNone");
         bottomBar.addEventListener("click", (e) => { userInputController.hideSettingsMenu(); });
         bottomBar.addEventListener("click", this.hideAvatarContextMenu.bind(this));
+        bottomBar.addEventListener("click", this.hideKeyboardShortcutsModal.bind(this));
         document.body.appendChild(bottomBar);
 
         let topBar = document.createElement("div");
@@ -198,6 +201,7 @@ export class UIController {
         this.modalBackground = document.createElement("div");
         this.modalBackground.classList.add("modalBackground", "displayNone");
         this.modalBackground.addEventListener("click", this.hideAvatarContextMenu.bind(this));
+        this.modalBackground.addEventListener("click", this.hideKeyboardShortcutsModal.bind(this));
         document.body.appendChild(this.modalBackground);
     }
 
@@ -317,6 +321,16 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
 
     initBottomRightControls() {
         let bottomRightControlsContainer = document.createElement("div");
+        bottomRightControlsContainer.addEventListener("mouseenter", () => {
+            document.querySelectorAll(".bottomRightControlText").forEach((el) => {
+                el.classList.remove("displayNone");
+            });
+        });
+        bottomRightControlsContainer.addEventListener("mouseleave", () => {
+            document.querySelectorAll(".bottomRightControlText").forEach((el) => {
+                el.classList.add("displayNone");
+            });
+        });
         bottomRightControlsContainer.setAttribute("role", "navigation");
         bottomRightControlsContainer.classList.add("bottomRightControlsContainer", "displayNone");
         document.body.appendChild(bottomRightControlsContainer);
@@ -352,6 +366,21 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
         });
         zoomOutContainer.appendChild(zoomOutButton);
         bottomRightControlsContainer.appendChild(zoomOutContainer);
+
+        let openKeyboardShortcutsContainer = document.createElement("div");
+        openKeyboardShortcutsContainer.classList.add("bottomRightControlContainer", "openKeyboardShortcutsContainer");
+        let openKeyboardShortcutsText = document.createElement("span");
+        openKeyboardShortcutsText.classList.add("bottomRightControlText", "displayNone");
+        openKeyboardShortcutsText.innerHTML = "Show Keyboard Shortcuts";
+        openKeyboardShortcutsContainer.appendChild(openKeyboardShortcutsText);
+        let showKeyboardShortcutsButton = document.createElement("button");
+        showKeyboardShortcutsButton.setAttribute("aria-label", "Show Keyboard Shortcuts");
+        showKeyboardShortcutsButton.classList.add("zoomButton", "showKeyboardShortcutsButton");
+        showKeyboardShortcutsButton.addEventListener("click", () => {
+            this.showKeyboardShortcutsModal();
+        });
+        openKeyboardShortcutsContainer.appendChild(showKeyboardShortcutsButton);
+        bottomRightControlsContainer.appendChild(openKeyboardShortcutsContainer);
     }
 
     initContextMenu() {
@@ -360,6 +389,76 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
         this.avatarContextMenu.classList.add("avatarContextMenu", "displayNone");
         this.avatarContextMenu.addEventListener("click", (e) => { e.stopPropagation(); });
         this.modalBackground.appendChild(this.avatarContextMenu);
+    }
+
+    initKeyboardShortcutsModal() {
+        this.keyboardShortcutsModal = document.createElement("div");
+        this.keyboardShortcutsModal.setAttribute("role", "dialog");
+        this.keyboardShortcutsModal.classList.add("keyboardShortcutsModal", "displayNone");
+        this.keyboardShortcutsModal.addEventListener("click", (e) => { e.stopPropagation(); });
+
+        let closeButton = document.createElement("button");
+        closeButton.classList.add("avatarContextMenu__closeButton");
+        closeButton.setAttribute("aria-label", "Close Keyboard Shortcuts Dialog");
+        closeButton.addEventListener("click", (e) => {
+            this.hideKeyboardShortcutsModal();
+        });
+        this.keyboardShortcutsModal.appendChild(closeButton);
+
+        let keyboardShortcut__header = document.createElement("h1");
+        keyboardShortcut__header.classList.add("keyboardShortcut__header");
+        keyboardShortcut__header.innerHTML = "Keyboard Shortcuts";
+        this.keyboardShortcutsModal.appendChild(keyboardShortcut__header);
+
+        let shortcuts: any = {
+            "Movement": {
+                "Rotate Left": ["A", "←"],
+                "Rotate Right": ["D", "→"],
+            },
+            "Audio": {
+                "Toggle Mic Mute": ["M"],
+                "Push to Talk": ["Spacebar"],
+            },
+            "Interface": {
+                "Zoom Out": ["-"],
+                "Zoom In": ["+"],
+                "Close Dialog": ["ESC"],
+                "Show Keyboard Shortcuts": ["?"],
+            },
+            "Advanced": {
+                "Highlight Seat Clockwise": ["J"],
+                "Move to Highlighted Seat": ["K"],
+                "Highlight Seat Counter-Clockwise": ["L"],
+            },
+        };
+
+        let categoryKeys = Object.keys(shortcuts);
+        for (let k = 0; k < categoryKeys.length; k++) {
+            let keyboardShortcut__categoryHeader = document.createElement("h2");
+            keyboardShortcut__categoryHeader.classList.add("keyboardShortcut__categoryHeader")
+            keyboardShortcut__categoryHeader.innerHTML = categoryKeys[k];
+            this.keyboardShortcutsModal.appendChild(keyboardShortcut__categoryHeader);
+
+            let keysKeys = Object.keys(shortcuts[categoryKeys[k]]);
+            for (let i = 0; i < keysKeys.length; i++) {
+                let el = document.createElement("p");
+                el.classList.add("keyboardShortcut");
+    
+                let keys = shortcuts[categoryKeys[k]][keysKeys[i]];
+                for (let j = 0; j < keys.length; j++) {
+                    let span = document.createElement("span");
+                    span.classList.add("keyboardShortcut__key");
+                    span.innerHTML = keys[j];
+                    el.appendChild(span);
+                }
+    
+                el.innerHTML += `<span class="keyboardShortcut__keyDescription">${keysKeys[i]}</span>`;
+    
+                this.keyboardShortcutsModal.appendChild(el);
+            }
+        }
+
+        this.modalBackground.appendChild(this.keyboardShortcutsModal);
     }
 
     hideLoadingOverlay() {
@@ -413,6 +512,20 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
 
         document.querySelector(".normalModeCanvas").setAttribute("tabIndex", "0");
         (<HTMLCanvasElement>document.querySelector(".normalModeCanvas")).focus();
+    }
+
+    showKeyboardShortcutsModal() {
+        this.modalBackground.classList.remove("displayNone");
+        this.keyboardShortcutsModal.classList.remove("displayNone");
+        let closeButton = <HTMLButtonElement>this.keyboardShortcutsModal.querySelector(".avatarContextMenu__closeButton");
+        if (closeButton) {
+            closeButton.focus();
+        }
+    }
+
+    hideKeyboardShortcutsModal() {
+        this.keyboardShortcutsModal.classList.add("displayNone");
+        this.modalBackground.classList.add("displayNone");
     }
     
     generateCloseButtonUI() {
