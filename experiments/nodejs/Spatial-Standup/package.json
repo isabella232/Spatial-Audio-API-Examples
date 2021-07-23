@@ -19,7 +19,10 @@
     "electron": "webpack --env electron && node -r esm ./src/electron/generateElectronApp.js && electron .",
     "make": "webpack --env electron && node -r esm ./src/electron/generateElectronApp.js && electron-forge make",
     "start": "electron-forge start",
-    "package": "webpack --env electron && node -r esm ./src/electron/generateElectronApp.js && electron-forge package"
+    "package": "webpack --env electron && node -r esm ./src/electron/generateElectronApp.js && electron-forge package",
+    "ngrok": "ngrok http -host-header=rewrite 8180",
+    "ngrok:staging": "ngrok http -host-header=rewrite 8181",
+    "ngrok:prod": "ngrok http -host-header=rewrite 8180"
   },
   "repository": {
     "type": "git",
@@ -36,6 +39,7 @@
     "audio-format": "^2.3.2",
     "aws-sdk": "^2.931.0",
     "body-parser": "^1.19.0",
+    "botbuilder": "^4.14.1",
     "electron-squirrel-startup": "^1.0.0",
     "express": "^4.17.1",
     "googleapis": "^39.2.0",

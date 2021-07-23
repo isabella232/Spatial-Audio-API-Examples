@@ -8,9 +8,12 @@ const googleSheets = google.sheets('v4');
 export enum ServerAnalyticsEventCategory {
     ServerStartup = "Server Started Up",
     SlackBotAdded = "Slack Bot Added",
+    TeamsBotAdded = "Teams Bot Added",
     SlackBotInstallerInfoCollected = "Slack Bot Installer Info Collected",
     SlackBotAdminInfoCollected = "Slack Bot Admin Info Collected",
+    TeamsBotMemberInfoCollected = "Teams Bot Member Info Collected",
     SlackBotUsed = "Slack Bot Used",
+    TeamsBotUsed = "Teams Bot Used",
     UserConnected = "User Connected",
     UserDisconnected = "User Disconnected",
 }
@@ -19,6 +22,15 @@ export class ServerStartupEvent {
     constructor() { }
 }
 export class SlackBotAddedEvent {
+    teamName: string;
+    teamID: string;
+    
+    constructor(teamName: string, teamID: string) {
+        this.teamName = teamName;
+        this.teamID = teamID;
+    }
+}
+export class TeamsBotAddedEvent {
     teamName: string;
     teamID: string;
     
@@ -41,15 +53,35 @@ export class SlackBotAdminInfoCollectedEvent {
         this.info = info;
     }
 }
+export class TeamsBotMemberInfoCollectedEvent {
+    info: any;
+
+    constructor(info: any) {
+        this.info = info;
+    }
+}
 export class SlackBotUsedEvent {
     user_id: string;
     team_id: string;
-    containedExplicitRoomName: boolean;
+    roomName: string;
 
-    constructor(user_id: string, team_id: string, containedExplicitRoomName: boolean) {
+    constructor(user_id: string, team_id: string, roomName: string) {
         this.user_id = user_id;
         this.team_id = team_id;
-        this.containedExplicitRoomName = containedExplicitRoomName;
+        this.roomName = roomName;
+    }
+}
+export class TeamsBotUsedEvent {
+    user_aad_object_id: string;
+    team_id: string;
+    is_hifi_employee: boolean;
+    roomName: string;
+
+    constructor(user_aad_object_id: string, team_id: string, is_hifi_employee: boolean, roomName: string) {
+        this.user_aad_object_id = user_aad_object_id;
+        this.team_id = team_id;
+        this.is_hifi_employee = is_hifi_employee;
+        this.roomName = roomName;
     }
 }
 export class UserConnectedOrDisconnectedEvent {
@@ -186,6 +218,11 @@ export class ServerAnalyticsController {
                 detailsText = `Team Name: ${e.teamName} Team ID: ${e.teamID}`;
                 googleSheetsDetails.push(e.teamName, e.teamID);
                 break;
+            case ServerAnalyticsEventCategory.TeamsBotAdded:
+                e = <TeamsBotAddedEvent>details;
+                detailsText = `Team Name: ${e.teamName} Team ID: ${e.teamID}`;
+                googleSheetsDetails.push(e.teamName, e.teamID);
+                break;
             case ServerAnalyticsEventCategory.SlackBotInstallerInfoCollected:
                 e = <SlackBotInstallerInfoCollectedEvent>details;
                 detailsText = JSON.stringify(e.info);
@@ -200,6 +237,15 @@ export class ServerAnalyticsController {
                 });
                 usedCustomGoogleSheetsLogger = true;
                 break;
+            case ServerAnalyticsEventCategory.TeamsBotMemberInfoCollected:
+                e = <TeamsBotMemberInfoCollectedEvent>details;
+                detailsText = JSON.stringify(e.info);
+                e.info.forEach((member: any) => {
+                    googleSheetsDetails = [timestamp, member.teamID, member.id, member.name, member.email];
+                    this.logEventGoogleSheets(category, googleSheetsDetails);
+                });
+                usedCustomGoogleSheetsLogger = true;
+                break;
             case ServerAnalyticsEventCategory.SlackBotUsed:
                 e = <SlackBotUsedEvent>details;
 
@@ -209,9 +255,16 @@ export class ServerAnalyticsController {
                     isHiFiEmployee = true;
                 }
 
-                detailsText = `${isHiFiEmployee ? "HIFI EMPLOYEE " : ""}${e.team_id}/${e.user_id} used the Slack bot.`;
+                detailsText = `${isHiFiEmployee ? "HIFI EMPLOYEE " : ""}${e.team_id}/${e.user_id} used the Slack bot to link to a room named ${e.roomName}.`;
 
-                googleSheetsDetails.push(isHiFiEmployee ? "true" : "false", e.team_id, e.user_id);
+                googleSheetsDetails.push(isHiFiEmployee ? "true" : "false", e.team_id, e.user_id, e.roomName);
+                break;
+            case ServerAnalyticsEventCategory.TeamsBotUsed:
+                e = <TeamsBotUsedEvent>details;
+
+                detailsText = `${e.is_hifi_employee ? "HIFI EMPLOYEE " : ""}${e.team_id}/${e.user_aad_object_id} used the Teams bot to link to a room named ${e.roomName}.`;
+
+                googleSheetsDetails.push(e.is_hifi_employee ? "true" : "false", e.team_id, e.user_aad_object_id, e.roomName);
                 break;
             case ServerAnalyticsEventCategory.UserConnected:
             case ServerAnalyticsEventCategory.UserDisconnected:

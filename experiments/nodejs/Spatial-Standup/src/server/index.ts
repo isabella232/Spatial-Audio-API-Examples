@@ -19,7 +19,7 @@ const auth = require('../../auth.json');
 const { generateHiFiJWT } = require('./utilities');
 import { renderApp } from "./serverRender";
 
-const analyticsController = new ServerAnalyticsController();
+export const analyticsController = new ServerAnalyticsController();
 
 // This may need to be configurable in the future.
 // For now, all instances of SS will use the "Standard" JSON configuration.
@@ -70,6 +70,28 @@ if (serverMode === "dev") {
         });
     });
 }
+
+import { BotFrameworkAdapter } from 'botbuilder';
+let adapter: BotFrameworkAdapter;
+if (auth.TEAMS_BOT_ID && auth.TEAMS_BOT_PASSWORD) {
+    adapter = new BotFrameworkAdapter({
+        appId: auth.TEAMS_BOT_ID,
+        appPassword: auth.TEAMS_BOT_PASSWORD
+    });
+} else {
+    console.warn(`One or both of \`auth.TEAMS_BOT_ID\` or \`auth.TEAMS_BOT_PASSWORD\` is missing! Teams Bot will not function.`);
+}
+import { SpatialStandupBotActivityHandler } from './spatialStandupBotActivityHandler';
+const spatialStandupBotActivityHandler = new SpatialStandupBotActivityHandler();
+app.post('/teams/messages', (req: any, res: any) => {
+    if (adapter) {
+        adapter.processActivity(req, res, async (context: any) => {
+            await spatialStandupBotActivityHandler.run(context);
+        });
+    } else {
+        res.status(404).send();
+    }
+});
 
 const DIST_DIR = path.join(__dirname, "..", "..", "dist");
 app.use('/', express.static(DIST_DIR));
@@ -265,6 +287,10 @@ function showSlackSuccess(teamName: string, res: any) {
 }
 
 app.get('/slack', (req: any, res: any, next: any) => {
+    if (!(auth.SLACK_CLIENT_ID && auth.SLACK_CLIENT_SECRET)) {
+        return res.sendStatus(404);
+    }
+
     let code = req.query.code;
     if (!code) {
         res.sendStatus(500);
@@ -338,8 +364,7 @@ app.get('/slack', (req: any, res: any, next: any) => {
                     })
             } else {
                 let errorString = `There was an error authorizing Spatial Standup with Slack. More information:\n${JSON.stringify(json)}`;
-                console.error(errorString);
-                res.status(500).send(errorString);
+                showSlackError(errorString, res);
             }
         })
         .catch((e: any) => {
@@ -380,7 +405,7 @@ app.post('/create', (req: any, res: any, next: any) => {
             channelText = `<${spaceURL}|Click here to join the Spatial Standup associated with this Slack channel.>`;
         }
 
-        analyticsController.logEvent(ServerAnalyticsEventCategory.SlackBotUsed, new SlackBotUsedEvent(req.body.user_id, req.body.team_id, false));
+        analyticsController.logEvent(ServerAnalyticsEventCategory.SlackBotUsed, new SlackBotUsedEvent(req.body.user_id, req.body.team_id, hash));
     }
 
     res.json({
