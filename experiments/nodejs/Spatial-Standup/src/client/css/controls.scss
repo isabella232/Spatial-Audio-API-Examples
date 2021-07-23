@@ -1876,6 +1876,10 @@ input:checked+.slider:before {
         align-items: center;
         margin: 0 7px 0 0;
         width: 39px;
+
+        @include media("<=phone") {
+            display: none;
+        }
     }
 
     height: 39px;
@@ -1896,11 +1900,7 @@ input:checked+.slider:before {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    width: calc(140px - 38px - 7px);
-
-    @include media("<=phone") {
-        display: none;
-    }
+    max-width: 96px;
 }
 
 .editMyProfileButton {
@@ -1914,10 +1914,6 @@ input:checked+.slider:before {
     text-align: left;
     border: none;
     width: fit-content;
-
-    @include media("<=phone") {
-        display: none;
-    }
 
     &--light-theme {
         color: map-get(themes.$light-theme, edit-my-profile-link);
