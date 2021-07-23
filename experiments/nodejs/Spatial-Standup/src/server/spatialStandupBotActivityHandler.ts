@@ -114,7 +114,7 @@ export class SpatialStandupBotActivityHandler extends TeamsActivityHandler {
     async greetUser(context: TurnContext) {
         const greetings = ["Hi", "Hey", "Greetings"];
         const punctuation = [".", "!"];
-        const replyActivity = MessageFactory.text(`${greetings[Math.floor(Math.random() * greetings.length)]}, ${context.activity.from.name}${punctuation[Math.floor(Math.random() * punctuation.length)]} To start a Spatial Standup, mention me, then type "standup".`);
+        const replyActivity = MessageFactory.text(`${greetings[Math.floor(Math.random() * greetings.length)]}, ${context.activity.from.name}${punctuation[Math.floor(Math.random() * punctuation.length)]} I'm here to help make your standups better. Want to try superior audio with your team? Mention me, then type "standup".`);
 
         await context.sendActivity(replyActivity);
     }
