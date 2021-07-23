@@ -37,8 +37,8 @@ export class SpatialStandupBotActivityHandler extends TeamsActivityHandler {
 
     async installedHandler(context: TurnContext) {
         const card = CardFactory.heroCard(
-            `Hi, I'm the Spatial Standup bot! 🤖`,
-            `Thank you for adding me to your Teams organization!<br><br>Any member of this Team can mention me (@Spatial Standup) then type "standup" to generate a unique link to High Fidelity's Spatial Standup, where you and your team can collaborate via spatial audio and video in a comfortable environment.<br><br><strong>The generated link is unique to the Teams channel in which you mention me and type "standup".</strong> If you share the Spatial Standup Room link elsewhere, others will be able to join that Room.`,
+            `Hi, I'm the SpatialStandup bot! 🤖`,
+            `Thank you for adding me to your Teams organization!<br><br>Any member of this Team can mention me (@SpatialStandup) then type "standup" to generate a unique link to High Fidelity's Spatial Standup, where you and your team can collaborate via spatial audio and video in a comfortable environment.<br><br><strong>The generated link is unique to the Teams channel in which you mention me and type "standup".</strong> If you share the Spatial Standup Room link elsewhere, others will be able to join that Room.`,
             null,
             [
                 {
@@ -86,8 +86,8 @@ export class SpatialStandupBotActivityHandler extends TeamsActivityHandler {
 
     async helpHandler(context: TurnContext) {
         const card = CardFactory.heroCard(
-            `Hi, I'm the Spatial Standup bot! 🤖`,
-            `Mention me (@Spatial Standup) then type "standup" to generate a unique link to High Fidelity's Spatial Standup, where you and your team can collaborate via spatial audio and video in a comfortable environment.<br><br><strong>The generated link is unique to the Teams channel in which you mention me and type "standup".</strong> If you share the Spatial Standup Room link elsewhere, others will be able to join that Room.`,
+            `Hi, I'm the SpatialStandup bot! 🤖`,
+            `Mention me (@SpatialStandup) then type "standup" to generate a unique link to High Fidelity's Spatial Standup, where you and your team can collaborate via spatial audio and video in a comfortable environment.<br><br><strong>The generated link is unique to the Teams channel in which you mention me and type "standup".</strong> If you share the Spatial Standup Room link elsewhere, others will be able to join that Room.`,
             null,
             [
                 {
@@ -130,7 +130,7 @@ export class SpatialStandupBotActivityHandler extends TeamsActivityHandler {
             teamsTeamId = context.activity.channelData.team.id;
             teamsChannelId = context.activity.channelData.channel.id;
         } else {
-            await context.sendActivity(MessageFactory.text(`I couldn't determine your Team or Channel. Please mention me (@Spatial Standup) from within a Team conversation!`));
+            await context.sendActivity(MessageFactory.text(`I couldn't determine your Team or Channel. Please mention me (@SpatialStandup) from within a Team conversation!`));
             return;
         }
 
