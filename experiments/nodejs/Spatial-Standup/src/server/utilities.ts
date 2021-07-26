@@ -12,6 +12,7 @@ const APP_ID = auth.HIFI_APP_ID;
 // This is the "App Secret" as obtained from the High Fidelity Audio API Developer Console. Do not share this string.
 const APP_SECRET = auth.HIFI_APP_SECRET;
 const SECRET_KEY_FOR_SIGNING = crypto.createSecretKey(Buffer.from(APP_SECRET, "utf8"));
+const JWT_EXPIRATION_MS = 15 * 60 * 1000;
 export async function generateHiFiJWT(userID: string, spaceName: string, isAdmin: boolean = false) {
     let hiFiJWT;
     try {
@@ -19,7 +20,8 @@ export async function generateHiFiJWT(userID: string, spaceName: string, isAdmin
             "user_id": userID,
             "app_id": APP_ID,
             "space_name": spaceName,
-            "admin": isAdmin
+            "admin": isAdmin,
+            "exp": Math.round((Date.now() + JWT_EXPIRATION_MS) / 1000)
         };
 
         hiFiJWT = await new SignJWT(jwtArgs)
