@@ -21,7 +21,7 @@ export async function renderApp(isInDevMode: boolean, appConfigURL: string, spac
         const HIFI_PROVIDED_USER_ID = "${providedUserID}";
         const HIFI_JWT = "${hiFiJWT}";
         const HIFI_SPACE_NAME = "${spaceName}";
-        const HIFI_ENDPOINT_URL = "${auth.HIFI_ENDPOINT_URL}";
+        const HIFI_SIGNALING_URL = "${auth.HIFI_SIGNALING_URL}";
         const TWILIO_JWT = "${twilioJWT}";
         const APP_MODE = "web";
         const APP_CONFIG_URL = "${appConfigURL}";
