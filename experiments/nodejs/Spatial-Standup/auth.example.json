@@ -3,6 +3,7 @@
     "HIFI_APP_SECRET": "",
     "HIFI_DEFAULT_SPACE_NAME": "spatial-standup-space",
     "HIFI_ENDPOINT_URL": "api.highfidelity.com",
+    "HIFI_SIGNALING_URL": "api.highfidelity.com",
 
     "TWILIO_ACCOUNT_SID": "",
     "TWILIO_API_KEY_SID": "",

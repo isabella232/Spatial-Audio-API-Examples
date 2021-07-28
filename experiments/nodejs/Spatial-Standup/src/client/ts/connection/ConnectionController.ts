@@ -6,7 +6,7 @@ import SomeoneElseConnected from '../../audio/someoneElseConnected.wav';
 import SomeoneElseDisconnected from '../../audio/someoneElseDisconnected.wav';
 
 declare var HIFI_JWT: string;
-declare var HIFI_ENDPOINT_URL: string;
+declare var HIFI_SIGNALING_URL: string;
 
 // For maximum visibility into what the API is doing.
 HiFiLogger.setHiFiLogLevel(HiFiLogLevel.Debug);
@@ -158,7 +158,7 @@ export class ConnectionController {
                 let stackURLOverride = searchParams.get("stack");
 
                 // Connect!
-                let connectionStatus = await this.hifiCommunicator.connectToHiFiAudioAPIServer(jwt, stackURLOverride || HIFI_ENDPOINT_URL);
+                let connectionStatus = await this.hifiCommunicator.connectToHiFiAudioAPIServer(jwt, stackURLOverride || HIFI_SIGNALING_URL);
                 audionetInitResponse = connectionStatus.audionetInitResponse;
             } catch (e) {
                 reject(`Error connecting to High Fidelity:\n${e}`);

@@ -115,7 +115,7 @@ async function startAudioBot(providedUserID: string, audioURL: string, position:
     // Connect to our High Fidelity Space.
     let connectResponse;
     try {
-        connectResponse = await hifiCommunicator.connectToHiFiAudioAPIServer(hiFiJWT, auth.HIFI_ENDPOINT_URL);
+        connectResponse = await hifiCommunicator.connectToHiFiAudioAPIServer(hiFiJWT, auth.HIFI_SIGNALING_URL);
     } catch (e) {
         console.error(`Call to \`connectToHiFiAudioAPIServer()\` failed! Error:\n${JSON.stringify(e)}`);
         return;
