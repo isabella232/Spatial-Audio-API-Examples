@@ -422,8 +422,12 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
             "Interface": {
                 "Zoom Out": ["-"],
                 "Zoom In": ["+"],
-                "Close Dialog": ["ESC"],
-                "Show Keyboard Shortcuts": ["?"],
+                "Close Dialog": [
+                    {"innerHTML": "ESC", "aria-label": "Escape Key"}
+                ],
+                "Show Keyboard Shortcuts": [
+                    {"innerHTML": "?", "aria-label": "Question Mark"}
+                ],
             },
             "Advanced": {
                 "Highlight Seat Clockwise": ["J"],
@@ -448,7 +452,12 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
                 for (let j = 0; j < keys.length; j++) {
                     let span = document.createElement("span");
                     span.classList.add("keyboardShortcut__key");
-                    span.innerHTML = keys[j];
+                    if (keys[j]["innerHTML"] && keys[j]["aria-label"]) {
+                        span.innerHTML = keys[j]["innerHTML"];
+                        span.setAttribute("aria-label", keys[j]["aria-label"]);
+                    } else {
+                        span.innerHTML = keys[j];
+                    }
                     el.appendChild(span);
                 }
     
