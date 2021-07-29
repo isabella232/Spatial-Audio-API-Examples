@@ -370,7 +370,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
         let openKeyboardShortcutsContainer = document.createElement("div");
         openKeyboardShortcutsContainer.classList.add("bottomRightControlContainer", "openKeyboardShortcutsContainer");
         let openKeyboardShortcutsText = document.createElement("span");
-        openKeyboardShortcutsText.classList.add("bottomRightControlText", "displayNone");
+        openKeyboardShortcutsText.classList.add("bottomRightControlText", "bottomRightControlText__showKeyboardShortcuts", "displayNone");
         openKeyboardShortcutsText.innerHTML = "Show Keyboard Shortcuts";
         openKeyboardShortcutsContainer.appendChild(openKeyboardShortcutsText);
         let showKeyboardShortcutsButton = document.createElement("button");
