@@ -245,8 +245,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
 
         let ftueInnerContainer__okButton = document.createElement("button");
         ftueInnerContainer__okButton.classList.add("ftueInnerContainer__okButton");
-        ftueInnerContainer__okButton.setAttribute("aria-label", "OK"); 
-        ftueInnerContainer__okButton.setAttribute("aria-labelledby", "ftueInnerContainer__text"); 
+        ftueInnerContainer__okButton.setAttribute("aria-label", "Click here to continue."); 
         ftueInnerContainer__okButton.innerHTML = `OK, thanks!`;
         ftueInnerContainer__okButton.addEventListener("click", (e) => {
             this.showMainUI();
