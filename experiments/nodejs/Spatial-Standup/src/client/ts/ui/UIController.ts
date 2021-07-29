@@ -565,6 +565,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
         if (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash) {
             displayName = document.createElement("input");
             displayName.classList.add("avatarContextMenu__displayName", "avatarContextMenu__displayName--mine");
+            displayName.setAttribute("aria-label", "Edit Your Username");
             displayName.type = "text";
             displayName.value = userData.displayName;
 
