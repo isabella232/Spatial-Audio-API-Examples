@@ -33,9 +33,7 @@ export class VideoController {
 
         this.toggleScreenShareButton = document.querySelector('.toggleScreenShareButton');
         if (this.toggleScreenShareButton) {
-            this.toggleScreenShareButton.addEventListener("click", async (e) => {
-                await this.toggleScreenShare();
-            });
+            this.toggleScreenShareButton.addEventListener("click", this.toggleScreenShare.bind(this));
         }
 
         this.providedUserIDToVideoElementMap = new Map();
