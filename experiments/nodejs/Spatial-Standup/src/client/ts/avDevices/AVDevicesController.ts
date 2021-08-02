@@ -4,6 +4,7 @@ import { connectionController, videoController } from "..";
 export class AVDevicesController {
     inputAudioMediaStream: MediaStream;
     outputAudioElement: HTMLAudioElement;
+    outputAudioMuted: boolean = false;
     audioConstraints: MediaTrackConstraints;
     currentAudioInputDeviceID: string;
     currentAudioOutputDeviceID: string;
