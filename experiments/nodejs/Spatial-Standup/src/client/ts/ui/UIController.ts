@@ -152,11 +152,6 @@ export class UIController {
         toggleInputMuteButton.classList.add("bottomControlButton", "toggleInputMuteButton", "toggleInputMuteButton--unmuted");
         bottomControlsContainer.appendChild(toggleInputMuteButton);
 
-        let toggleOutputMuteButton = document.createElement("button");
-        toggleOutputMuteButton.setAttribute("aria-label", "Headphones are unmuted. Click to mute your headphones.");
-        toggleOutputMuteButton.classList.add("bottomControlButton", "toggleOutputMuteButton", "toggleOutputMuteButton--unmuted");
-        bottomControlsContainer.appendChild(toggleOutputMuteButton);
-
         let toggleVideoButton = document.createElement("button");
         toggleVideoButton.setAttribute("aria-label", "Camera is disabled. Click to enable your camera.");
         toggleVideoButton.classList.add("bottomControlButton", "toggleVideoButton", "toggleVideoButton--muted");

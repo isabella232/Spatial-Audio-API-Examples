@@ -14,7 +14,6 @@ export class UserInputController {
     normalModeCanvasKeyboardEventCache: Array<KeyboardEvent> = [];
     wasMutedBeforePTT: boolean = false;
     toggleInputMuteButton: HTMLButtonElement;
-    toggleOutputMuteButton: HTMLButtonElement;
     toggleVideoButton: HTMLButtonElement;
     toggleScreenShareButton: HTMLButtonElement;
     toggleSettingsButton: HTMLButtonElement;
@@ -30,10 +29,6 @@ export class UserInputController {
         this.toggleInputMuteButton = document.querySelector('.toggleInputMuteButton');
         this.toggleInputMuteButton.addEventListener("click", (e) => { this.toggleInputMute(); });
         this.toggleInputMuteButton.addEventListener("contextmenu", (e) => { this.toggleShowSettingsMenu(); e.preventDefault(); }, false);
-
-        this.toggleOutputMuteButton = document.querySelector('.toggleOutputMuteButton');
-        this.toggleOutputMuteButton.addEventListener("click", (e) => { this.toggleOutputMute(); });
-        this.toggleOutputMuteButton.addEventListener("contextmenu", (e) => { this.toggleShowSettingsMenu(); e.preventDefault(); }, false);
 
         this.toggleVideoButton = document.querySelector('.toggleVideoButton');
         this.toggleVideoButton.addEventListener("contextmenu", (e) => { this.toggleShowSettingsMenu(); e.preventDefault(); }, false);
@@ -500,46 +495,6 @@ export class UserInputController {
             uiThemeController.refreshThemedElements();
             webSocketConnectionController.updateMyUserDataOnWebSocketServer();
         }
-    }
-
-    toggleOutputMute() {
-        this.setOutputMute(!avDevicesController.outputAudioMuted);
-
-        if (avDevicesController.outputAudioMuted) {
-            this.toggleOutputMuteButton.setAttribute("aria-label", "Headphones are muted. Click to un-mute your headphones.");
-        } else {
-            this.toggleOutputMuteButton.setAttribute("aria-label", "Headphones are un-muted. Click to mute your headphones.");
-        }
-    }
-
-    setOutputMute(newMuteStatus: boolean) {
-        if (avDevicesController.outputAudioMuted === newMuteStatus) {
-            console.log(`Output mute status is already \`${newMuteStatus}\`!`);
-            return;
-        }
-        avDevicesController.outputAudioMuted = newMuteStatus;
-
-        let allAudioNodes = document.querySelectorAll("audio");
-        allAudioNodes.forEach((audioNode) => {
-            audioNode.muted = newMuteStatus;
-        });
-        avDevicesController.outputAudioElement.muted = newMuteStatus;
-        let allVideoNodes = document.querySelectorAll("video");
-        allVideoNodes.forEach((videoNode) => {
-            videoNode.muted = newMuteStatus;
-        });
-        console.log(`Set output mute status to \`${avDevicesController.outputAudioMuted}\``);
-
-        if (avDevicesController.outputAudioMuted) {
-            this.toggleOutputMuteButton.classList.remove("toggleOutputMuteButton--unmuted");
-            uiThemeController.clearThemesFromElement(<HTMLElement>this.toggleOutputMuteButton, 'toggleOutputMuteButton--unmuted', false);
-            this.toggleOutputMuteButton.classList.add("toggleOutputMuteButton--muted");
-        } else {
-            this.toggleOutputMuteButton.classList.remove("toggleOutputMuteButton--muted");
-            uiThemeController.clearThemesFromElement(<HTMLElement>this.toggleOutputMuteButton, 'toggleOutputMuteButton--muted', false);
-            this.toggleOutputMuteButton.classList.add("toggleOutputMuteButton--unmuted");
-        }
-        uiThemeController.refreshThemedElements();
     }
 
     setEchoCancellationStatus(newEchoCancellationStatus: boolean) {
