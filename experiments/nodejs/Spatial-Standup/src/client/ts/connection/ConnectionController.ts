@@ -351,6 +351,13 @@ export class ConnectionController {
     shutdown() {
         console.log(`Shutting down...`);
 
+        if (avDevicesController.inputAudioMediaStream) {
+            let tracks = avDevicesController.inputAudioMediaStream.getTracks();
+            tracks.forEach((track) => {
+                track.stop();
+            });
+        }
+
         webSocketConnectionController.stopWebSocketStuff();
 
         videoController.disconnectFromTwilio();
