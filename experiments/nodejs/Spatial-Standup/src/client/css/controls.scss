@@ -231,6 +231,11 @@ $bottom-controls-container-height: 72px;
     flex-direction: column;
     width: 100vw;
     height: 100vh;
+
+    &>p {
+        max-width: 660px;
+        margin: 16px;
+    }
 }
 
 .normalModeCanvas {
