@@ -174,6 +174,12 @@ export class UIController {
         toggleSettingsButton.setAttribute("aria-label", "Open Device Settings");
         toggleSettingsButton.classList.add("bottomControlButton", "toggleSettingsButton");
         bottomControlsContainer.appendChild(toggleSettingsButton);
+
+        let disconnectButton = document.createElement("button");
+        disconnectButton.setAttribute("data-attribution", "disconnect by Ahock from the Noun Project");
+        disconnectButton.setAttribute("aria-label", "Disconnect from Spatial Standup");
+        disconnectButton.classList.add("bottomControlButton", "disconnectButton");
+        bottomControlsContainer.appendChild(disconnectButton);
         
         bottomBar.appendChild(bottomControlsContainer);
 

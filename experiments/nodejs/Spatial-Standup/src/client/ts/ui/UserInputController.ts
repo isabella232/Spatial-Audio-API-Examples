@@ -18,6 +18,7 @@ export class UserInputController {
     toggleVideoButton: HTMLButtonElement;
     toggleScreenShareButton: HTMLButtonElement;
     toggleSettingsButton: HTMLButtonElement;
+    disconnectButton: HTMLButtonElement;
     leftClickStartPositionPX: any;
     lastDistanceBetweenLeftClickEvents: number;
     highlightedUserData: UserData;
@@ -46,6 +47,9 @@ export class UserInputController {
         this.toggleSettingsButton = document.querySelector('.toggleSettingsButton');
         this.toggleSettingsButton.addEventListener("click", (e) => { this.toggleShowSettingsMenu(); });
         this.toggleSettingsButton.addEventListener("contextmenu", (e) => { this.toggleShowSettingsMenu(); e.preventDefault(); }, false);
+
+        this.disconnectButton = document.querySelector('.disconnectButton');
+        this.disconnectButton.addEventListener("click", (e) => { this.disconnect(); });
 
         this.normalModeCanvas = document.querySelector('.normalModeCanvas');
         this.normalModeCanvas.addEventListener("click", this.handleCanvasClick.bind(this));
@@ -923,5 +927,9 @@ export class UserInputController {
         physicsController.smoothZoomDurationMS = PHYSICS.SMOOTH_ZOOM_DURATION_NORMAL_MS;
         physicsController.smoothZoomStartTimestamp = undefined;
         physicsController.pxPerMTarget = (physicsController.pxPerMTarget || physicsController.pxPerMCurrent) + scaleFactor;
+    }
+
+    disconnect() {
+        connectionController.shutdown();
     }
 }

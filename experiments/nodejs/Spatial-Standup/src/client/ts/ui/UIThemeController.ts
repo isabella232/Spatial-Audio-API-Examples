@@ -90,6 +90,7 @@ export class UIThemeController {
         this.addThemedElementFromClassName("toggleScreenShareButton--muted");
         this.addThemedElementFromClassName("toggleScreenShareButton--disabled");
         this.addThemedElementFromClassName("toggleSettingsButton");
+        this.addThemedElementFromClassName("disconnectButton");
         this.addThemedElementFromClassName("watchTogetherButton");
         this.addThemedElementFromClassName("leaveWatchPartyButton");
         this.addThemedElementFromClassName("watchTogetherURLInput");
