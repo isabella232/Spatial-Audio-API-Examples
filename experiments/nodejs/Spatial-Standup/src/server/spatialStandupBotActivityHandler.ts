@@ -29,10 +29,30 @@ export class SpatialStandupBotActivityHandler extends TeamsActivityHandler {
                     await this.postSSULink(context);
                     break;
                 default:
+                    await this.handleDefault(context);
                     break;
             }
             await next();
         });
+    }
+
+    async handleDefault(context: TurnContext) {
+        const card = CardFactory.heroCard(
+            `Unrecognized Command`,
+            `I'm sorry, I didn't understand your command.<br><br>Type <strong>help</strong> to see what I can do.`,
+            null,
+            [
+                {
+                    type: ActionTypes.MessageBack,
+                    title: 'help',
+                    value: undefined,
+                    text: 'help'
+                }
+            ]);
+        const replyActivity = {
+            attachments: [card]
+        }
+        await context.sendActivity(replyActivity);
     }
 
     async installedHandler(context: TurnContext) {
