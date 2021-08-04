@@ -359,6 +359,8 @@ export class ConnectionController {
             this.hifiCommunicator.disconnectFromHiFiAudioAPIServer();
         }
         this.hifiCommunicator = null;
+
+        document.body.innerHTML = `<div class="playOverlay shutdownDialog"><div class="playOverlay__header"><div class="playOverlay__headerImage"></div><div class="playOverlay__headerTextContainer"><h1 aria-label="Spatial Standup: Powered by High Fidelity" class="playOverlay__headerTextTop">Spatial Standup</h1><p class="playOverlay__headerTextBottom">Powered by High Fidelity</p></div></div><h1>Disconnected</h1><p>You have disconnected from Spatial Standup.</p><p>Tip: If you close your browser tab, you will also disconnect from Spatial Standup.</p></div>`
     }
 
     onUsersDisconnected(allDisconnectedUserData: Array<ReceivedHiFiAudioAPIData>) {
