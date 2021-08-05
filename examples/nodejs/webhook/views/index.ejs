@@ -1,0 +1,69 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Spatial Audio API - Webhook Test App</title>
+    <style>
+        p {
+            text-align: center;
+        }
+        .space-stats {
+            margin: 32px auto;
+            width: calc(min(100%, max(500px, 30%)));
+            padding: 4px 10px;
+            border: 2px solid #888;
+            border-radius: 16px;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+<div class="space-stats-list">
+    <% spaceStatsList.forEach(function (spaceStats) { -%>
+        <div class="space-stats">
+            <ul>
+                <li><strong>Space ID</strong>: <%= spaceStats.spaceID %></li>
+                <li><strong>Users Connected</strong>: <%= spaceStats.connectedUserCount %></li>
+                <li><strong>Total Sessions</strong>: <%= Object.keys(spaceStats.visitIdHashesSeen).length %></li>
+            </ul>
+        </div>
+    <% }) -%>
+    <% if (spaceStatsList.length === 0) { -%>
+        <p>Waiting for space stats...</p>
+    <% } -%>
+</div>
+<script type="text/javascript">
+    async function fetchSpaceStats() {
+        fetch("/space-stats").then(async (response) => {
+            if (response.status != 200) {
+                return;
+            }
+            let responseJSON = await response.json();
+            let spaceStatsList = responseJSON["spaceStatsList"]
+            let newSpaceStats = "";
+            spaceStatsList.forEach(function (spaceStats) {
+                newSpaceStats += `
+                <div class="space-stats">
+                    <ul>
+                        <li><strong>Space ID</strong>: ${spaceStats.spaceID}</li>
+                        <li><strong>Users Connected</strong>: ${spaceStats.connectedUserCount}</li>
+                        <li><strong>Total Sessions</strong>: ${Object.keys(spaceStats.visitIdHashesSeen).length}</li>
+                    </ul>
+                </div>
+                `;
+            });
+            if (spaceStatsList.length === 0) {
+                newSpaceStats += "<p>No space stats yet</p>";
+            }
+            document.querySelector(".space-stats-list").innerHTML = newSpaceStats;
+        });
+    }
+    fetchSpaceStats().then(() => {
+        setInterval(fetchSpaceStats, <%= statsFetchIntervalMs %>);
+    });
+</script>
+</body>
+</html>
