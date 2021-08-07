@@ -25,9 +25,9 @@
     <% spaceStatsList.forEach(function (spaceStats) { -%>
         <div class="space-stats">
             <ul>
-                <li><strong>Space ID</strong>: <%= spaceStats.spaceID %></li>
-                <li><strong>Users Connected</strong>: <%= spaceStats.connectedUserCount %></li>
-                <li><strong>Total Sessions</strong>: <%= Object.keys(spaceStats.visitIdHashesSeen).length %></li>
+                <li><strong>Space ID</strong>: <%= spaceStats["space-id"] %></li>
+                <li><strong>Users Connected</strong>: <%= spaceStats["connected-user-count"] %></li>
+                <li><strong>Total Sessions</strong>: <%= spaceStats["unique-session-count"] %></li>
             </ul>
         </div>
     <% }) -%>
@@ -42,15 +42,15 @@
                 return;
             }
             let responseJSON = await response.json();
-            let spaceStatsList = responseJSON["spaceStatsList"]
+            let spaceStatsList = responseJSON["space-stats-list"];
             let newSpaceStats = "";
             spaceStatsList.forEach(function (spaceStats) {
                 newSpaceStats += `
                 <div class="space-stats">
                     <ul>
-                        <li><strong>Space ID</strong>: ${spaceStats.spaceID}</li>
-                        <li><strong>Users Connected</strong>: ${spaceStats.connectedUserCount}</li>
-                        <li><strong>Total Sessions</strong>: ${Object.keys(spaceStats.visitIdHashesSeen).length}</li>
+                        <li><strong>Space ID</strong>: ${spaceStats["space-id"]}</li>
+                        <li><strong>Users Connected</strong>: ${spaceStats["connected-user-count"]}</li>
+                        <li><strong>Total Sessions</strong>: ${spaceStats["unique-session-count"]}</li>
                     </ul>
                 </div>
                 `;

@@ -42,10 +42,24 @@ async function validateWebhookEvent(payload, hifiSignature) {
     return false;
 }
 
+function getRecomputedClientData(statsPerSpace) {
+    let statsPerSpaceClientData = [];
+    for (let spaceStats of Object.values(statsPerSpace)) {
+        let spaceStatsClientData = {
+            "space-id": spaceStats.spaceID,
+            "connected-user-count": spaceStats.connectedUserCount,
+            "unique-session-count": Object.values(spaceStats.visitIdHashesSeen).length
+        };
+        statsPerSpaceClientData.push(spaceStatsClientData);
+    }
+    return statsPerSpaceClientData;
+}
+
+let statsPerSpaceClientData = [];
 let statsPerSpace = {};
 
 // This processes webhook events and stores them in statsPerSpace
-async function processWebhookEvent(headers, payload) {
+async function processWebhookEvent(headers, payload, recomputeClientData) {
     if (!headers["x-highfidelity-signature"]) {
         // This can happen if the user is sending their own requests to the webhook
         console.error("Webhook event header is invalid. Missing signature: x-highfidelity-signature");
@@ -71,6 +85,9 @@ async function processWebhookEvent(headers, payload) {
             spaceStats.visitIdHashesSeen[connectionChange["visit-id-hash"]] = true;
         }
 
+        if (recomputeClientData) {
+            statsPerSpaceClientData = getRecomputedClientData(statsPerSpace);
+        }
         return true;
     }
     return false;
@@ -139,8 +156,11 @@ async function pollPipedreamEvents(pipedreamSourceID) {
         let numWebhooksParsed = 0;
         console.log(`Received ${webhookEvents.length} candidate webhook events from Pipedream`);
         for (let webhookEvent of webhookEvents) {
-            let webhookProcessed = await processWebhookEvent(webhookEvent["headers"], webhookEvent["body"]);
+            let webhookProcessed = await processWebhookEvent(webhookEvent["headers"], webhookEvent["body"], false);
             numWebhooksParsed += webhookProcessed ? 1 : 0;
+        }
+        if (numWebhooksParsed > 0) {
+            statsPerSpaceClientData = getRecomputedClientData(statsPerSpace);
         }
         console.log(`Accepted ${numWebhooksParsed} webhook events from Pipedream`);
     } else {
@@ -164,17 +184,17 @@ fetchPipedreamSourceID().then((pipedreamSourceID) => {
 // This renders the stats page
 app.get('/', async (req, res) => {
     res.render('index', {
-        spaceStatsList: Object.values(statsPerSpace),
+        spaceStatsList: Object.values(statsPerSpaceClientData),
         statsFetchIntervalMs: 5 * 1000
     });
 });
 // This is queried by the stats page to update space stats
 app.get('/space-stats', async(req, res) => {
-    res.send({"spaceStatsList": Object.values(statsPerSpace)});
+    res.send({"space-stats-list": Object.values(statsPerSpaceClientData)});
 });
 // This is an example webhook endpoint that can receive and process webhook events on its own
 app.post('/webhook-endpoint', async (req, res) => {
-    let webhookProcessed = await processWebhookEvent(req.headers, req.body);
+    let webhookProcessed = await processWebhookEvent(req.headers, req.body, true);
     if (webhookProcessed) {
         res.status(200).send({"status": "ok"});
         console.log(`Parsed a webhook event from the endpoint`);
