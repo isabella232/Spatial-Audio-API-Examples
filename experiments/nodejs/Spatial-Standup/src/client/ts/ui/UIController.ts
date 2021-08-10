@@ -425,6 +425,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
                 "Close Dialog": [
                     {"innerHTML": "ESC", "aria-label": "Escape Key"}
                 ],
+                "Toggle Emoji Picker": ["E"],
                 "Show Keyboard Shortcuts": [
                     {"innerHTML": "?", "aria-label": "Question Mark"}
                 ],
