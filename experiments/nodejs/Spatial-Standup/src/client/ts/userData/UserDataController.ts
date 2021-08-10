@@ -254,7 +254,7 @@ class MyAvatar {
             }
             physicsController.autoComputePXPerMFromRoom(targetSeat.room);
         } else {
-            howlerController.playSound({ src: chairSounds[Math.floor(Math.random() * chairSounds.length)], randomSoundRate: true, positionM: myUserData.positionCurrent});
+            howlerController.playSound({ src: chairSounds[Math.floor(Math.random() * chairSounds.length)], randomSoundRate: true, positionM: myUserData.positionCurrent, tag: "environment"});
         }
 
         let currentRoom = myUserData.currentRoom;

@@ -144,7 +144,7 @@ export class WebSocketConnectionController {
                     }
 
                     if (playChairSound) {
-                        howlerController.playSound({ src: chairSounds[Math.floor(Math.random() * chairSounds.length)], randomSoundRate: true, positionM: localUserData.positionCurrent, volume: 0.3 });
+                        howlerController.playSound({ src: chairSounds[Math.floor(Math.random() * chairSounds.length)], randomSoundRate: true, positionM: localUserData.positionCurrent, volume: 0.3, tag: "environment" });
                     }
                     
                     console.log(`Updated participant:\nVisit ID Hash \`${localUserData.visitIDHash}\`:\nDisplay Name: \`${displayName}\`\nColor: ${colorHex}\nprofileImageURL: ${profileImageURL}\nisAudioInputMuted: ${isAudioInputMuted}\nCurrent Seat ID: ${localUserData.currentSeat ? localUserData.currentSeat.seatID : "undefined"}\nCurrent Room Name: ${localUserData.currentRoom ? localUserData.currentRoom.name : "undefined"}\nechoCancellationEnabled: ${localUserData.echoCancellationEnabled}\nagcEnabled: ${localUserData.agcEnabled}\nnsEnabled: ${localUserData.noiseSuppressionEnabled}\nhiFiGainSliderValue: ${localUserData.hiFiGainSliderValue}\nvolumeThreshold:${localUserData.volumeThreshold}\ncurrentWatchPartyRoomName:${localUserData.currentWatchPartyRoomName}\nisStreamingVideo:${localUserData.isStreamingVideo}\n`);

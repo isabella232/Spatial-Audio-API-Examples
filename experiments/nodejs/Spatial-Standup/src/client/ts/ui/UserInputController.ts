@@ -443,6 +443,45 @@ export class UserInputController {
                         settingsMenu.appendChild(changeVideoDeviceMenu__select);
                     }
 
+                    let settingsMenu__header2 = document.createElement("h1");
+                    settingsMenu__header2.id = "settingsMenu__header";
+                    settingsMenu__header2.setAttribute("aria-label", "Settings");
+                    settingsMenu__header2.classList.add("settingsMenu__h1");
+                    settingsMenu__header2.innerHTML = "Settings";
+                    settingsMenu.appendChild(settingsMenu__header2);
+
+                    let toggleEnvironmentalSoundsContainer = document.createElement("div");
+                    toggleEnvironmentalSoundsContainer.classList.add("toggleEnvironmentalSoundsContainer");
+                    settingsMenu.appendChild(toggleEnvironmentalSoundsContainer);
+            
+                    let toggleEnvironmentalSoundsCheckboxLabel = document.createElement("label");
+                    toggleEnvironmentalSoundsCheckboxLabel.setAttribute("for", "toggleEnvironmentalSoundsCheckbox");
+                    toggleEnvironmentalSoundsCheckboxLabel.classList.add("toggleEnvironmentalSoundsCheckboxLabel");
+                    toggleEnvironmentalSoundsCheckboxLabel.innerHTML = "Environmental Sounds";
+                    toggleEnvironmentalSoundsContainer.appendChild(toggleEnvironmentalSoundsCheckboxLabel);
+            
+                    let toggleEnvironmentalSoundsSwitchLabel = document.createElement("label");
+                    toggleEnvironmentalSoundsSwitchLabel.classList.add("switch");
+                    let toggleEnvironmentalSoundsSwitchSlider = document.createElement("span");
+                    toggleEnvironmentalSoundsSwitchSlider.classList.add("slider");
+            
+                    let toggleEnvironmentalSoundsCheckbox = document.createElement("input");
+                    toggleEnvironmentalSoundsCheckbox.id = "toggleEnvironmentalSoundsCheckbox";
+                    toggleEnvironmentalSoundsCheckbox.classList.add("toggleEnvironmentalSoundsCheckbox");
+                    toggleEnvironmentalSoundsCheckbox.type = "checkbox";
+                    if (!localStorage.getItem("toggleEnvironmentalSoundsEnabled")) {
+                        localStorage.setItem("toggleEnvironmentalSoundsEnabled", "true");
+                    }
+                    toggleEnvironmentalSoundsCheckbox.checked = localStorage.getItem("toggleEnvironmentalSoundsEnabled") === "true";
+                    toggleEnvironmentalSoundsCheckbox.addEventListener("click", (e) => {
+                        localStorage.setItem("toggleEnvironmentalSoundsEnabled", toggleEnvironmentalSoundsCheckbox.checked ? "true" : "false");
+                    });
+            
+                    toggleEnvironmentalSoundsSwitchLabel.appendChild(toggleEnvironmentalSoundsCheckbox);
+                    toggleEnvironmentalSoundsSwitchLabel.appendChild(toggleEnvironmentalSoundsSwitchSlider);
+            
+                    toggleEnvironmentalSoundsContainer.appendChild(toggleEnvironmentalSoundsSwitchLabel);
+
                     let closeButton = document.createElement("button");
                     closeButton.setAttribute("aria-label", "Close Device Settings");
                     closeButton.classList.add("settingsMenu__closeButton");

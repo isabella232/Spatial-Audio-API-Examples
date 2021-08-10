@@ -98,3 +98,15 @@
         background-image: url('../images/icons/light-theme/toggleSignalButtonContainerButton-open-light.svg');
     }
 }
+
+.toggleSoundsContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 8px 0 0 0;
+}
+
+.toggleSoundsCheckboxLabel {
+    margin: 0 8px 0 0;
+}

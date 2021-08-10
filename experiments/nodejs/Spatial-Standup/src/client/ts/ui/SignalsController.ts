@@ -46,6 +46,7 @@ export interface Signal {
 export interface SignalParams {
     name: string;
     parentAvatarVisitIDHash?: string;
+    emitsSound: boolean;
 }
 
 export class SignalsController {
@@ -55,6 +56,7 @@ export class SignalsController {
     activeSignalButton: HTMLButtonElement;
     normalModeCanvas: HTMLCanvasElement;
     signalButtonContainer: HTMLDivElement;
+    toggleSoundsCheckbox: HTMLInputElement;
     activeSignal: Signal;
     supportedSignals: Map<string, Signal>;
 
@@ -80,20 +82,6 @@ export class SignalsController {
             this.toggleSignalContainerVisibility();
         });
         topRightSignalButtonContainer.appendChild(this.toggleSignalButtonContainerButton);
-
-        this.pauseSignalButton = document.createElement("button");
-        this.pauseSignalButton.classList.add("pauseSignalButton", "displayNone");
-        this.pauseSignalButton.addEventListener("click", () => {
-
-        });
-        topRightSignalButtonContainer.appendChild(this.pauseSignalButton);
-
-        this.activeSignalButton = document.createElement("button");
-        this.activeSignalButton.classList.add("activeSignalButton", "displayNone");
-        this.activeSignalButton.addEventListener("click", () => {
-
-        });
-        topRightSignalButtonContainer.appendChild(this.activeSignalButton);
 
         this.addSupportedSignal({
             "name": "smile",
@@ -263,6 +251,35 @@ export class SignalsController {
             "numParticles": 1,
             "intervalMS": 450,
         });
+
+        let toggleSoundsContainer = document.createElement("div");
+        toggleSoundsContainer.classList.add("toggleSoundsContainer");
+        this.signalButtonContainer.appendChild(toggleSoundsContainer);
+
+        let toggleSoundsCheckboxLabel = document.createElement("label");
+        toggleSoundsCheckboxLabel.setAttribute("for", "toggleSoundsCheckbox");
+        toggleSoundsCheckboxLabel.classList.add("toggleSoundsCheckboxLabel");
+        toggleSoundsCheckboxLabel.innerHTML = "Emit Sounds";
+        toggleSoundsContainer.appendChild(toggleSoundsCheckboxLabel);
+
+        let toggleSoundsSwitchLabel = document.createElement("label");
+        toggleSoundsSwitchLabel.classList.add("switch");
+        let toggleSoundsSwitchSlider = document.createElement("span");
+        toggleSoundsSwitchSlider.classList.add("slider");
+
+        this.toggleSoundsCheckbox = document.createElement("input");
+        this.toggleSoundsCheckbox.id = "toggleSoundsCheckbox";
+        this.toggleSoundsCheckbox.classList.add("toggleSoundsCheckbox");
+        this.toggleSoundsCheckbox.type = "checkbox";
+        this.toggleSoundsCheckbox.checked = localStorage.getItem("toggleSoundsEnabled") === "true";
+        this.toggleSoundsCheckbox.addEventListener("click", (e) => {
+            localStorage.setItem("toggleSoundsEnabled", this.toggleSoundsCheckbox.checked ? "true" : "false");
+        });
+
+        toggleSoundsSwitchLabel.appendChild(this.toggleSoundsCheckbox);
+        toggleSoundsSwitchLabel.appendChild(toggleSoundsSwitchSlider);
+
+        toggleSoundsContainer.appendChild(toggleSoundsSwitchLabel);
     }
 
     hideSignalContainer() {
@@ -421,12 +438,12 @@ export class SignalsController {
             }
         }
 
-        if (forcePlaySound || isCloseEnough) {
+        if ((forcePlaySound || isCloseEnough) && params.emitsSound) {
             if (parentAvatar) {
                 let sounds = localSignalParams.sounds;
                 let src = sounds[Math.floor(Math.random() * sounds.length)];
     
-                howlerController.playSound({ src: src, positionM: parentAvatar.positionCurrent, randomSoundRate: true });
+                howlerController.playSound({ src: src, positionM: parentAvatar.positionCurrent, randomSoundRate: true, tag: "environment" });
             } else {
                 this.playSignalSound(params.name);
             }
@@ -454,7 +471,8 @@ export class SignalsController {
             "name": this.activeSignal.name,
             "parentAvatarVisitIDHash": userDataController.myAvatar.myUserData.visitIDHash,
             "currentRelativeOrWorldPositionM": signal.currentRelativeOrWorldPositionM,
-            "targetRelativeOrWorldPositionM": signal.targetRelativeOrWorldPositionM
+            "targetRelativeOrWorldPositionM": signal.targetRelativeOrWorldPositionM,
+            "emitsSound": this.toggleSoundsCheckbox.checked
         };
 
         this.addSignal(signalParams, true);

@@ -843,6 +843,17 @@ $bottom-controls-container-height: 72px;
     }
 }
 
+.toggleEnvironmentalSounds {
+    &Container {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        height: 24px;
+        padding: 12px 0;
+        justify-content: space-between;
+    }
+}
+
 .topBar {
     width: 100vw;
     height: 48px;
@@ -1583,6 +1594,7 @@ $bottom-controls-container-height: 72px;
     position: relative;
     top: 2px;
     left: 2px;
+    margin: 0;
 }
 
 .slider {

@@ -67,6 +67,7 @@ export class LandmarksController {
                 positionM: clickedLandmark.positionM,
                 randomSoundRate: clickedLandmark.randomSoundRate,
                 localOnly: false,
+                tag: "environment"
             });
         }
     }
