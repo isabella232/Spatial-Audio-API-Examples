@@ -5,20 +5,34 @@ import SignalHandRaised from '../../images/signals/handRaised.png';
 import SignalParty from '../../images/signals/party.png';
 import SignalHeart from '../../images/signals/heart.png';
 import SignalJoy from '../../images/signals/joy.png';
-import SignalPoo from '../../images/signals/poo.png';
 import SignalInterrobang from '../../images/signals/interrobang.png';
 import Signal100 from '../../images/signals/100.png';
+import SignalClap from '../../images/signals/clap.png';
 import SoundSmile from '../../audio/smile.mp3';
 import SoundHandRaised01 from '../../audio/handRaised01.mp3';
 import SoundHandRaised02 from '../../audio/handRaised02.mp3';
 import SoundParty from '../../audio/party.mp3';
 import SoundHeart from '../../audio/heart.mp3';
 import SoundJoy from '../../audio/joy.mp3';
-import SoundPoo01 from '../../audio/poo01.mp3';
-import SoundPoo02 from '../../audio/poo02.mp3';
 import SoundInterrobang from '../../audio/interrobang.mp3';
 import Sound10001 from '../../audio/10001.mp3';
 import Sound10002 from '../../audio/10002.mp3';
+import SoundClap01 from '../../audio/clap01.wav';
+import SoundClap02 from '../../audio/clap02.wav';
+import SoundClap03 from '../../audio/clap03.wav';
+import SoundClap04 from '../../audio/clap04.wav';
+import SoundClap05 from '../../audio/clap05.wav';
+import SoundClap06 from '../../audio/clap06.wav';
+import SoundClap07 from '../../audio/clap07.wav';
+import SoundClap08 from '../../audio/clap08.wav';
+import SoundClap09 from '../../audio/clap09.wav';
+import SoundClap10 from '../../audio/clap10.wav';
+import SoundClap11 from '../../audio/clap11.wav';
+import SoundClap12 from '../../audio/clap12.wav';
+import SoundClap13 from '../../audio/clap13.wav';
+import SoundClap14 from '../../audio/clap14.wav';
+import SoundClap15 from '../../audio/clap15.wav';
+import SoundClap16 from '../../audio/clap16.wav';
 import { EasingFunctions, Utilities } from "../utilities/Utilities";
 import { AVATAR, PARTICLES, SIGNALS } from "../constants/constants";
 import { connectionController, howlerController, localSoundsController, particleController, uiThemeController, userDataController, webSocketConnectionController } from "..";
@@ -36,7 +50,7 @@ export interface Signal {
     opacityEnd: number;
     imageSRC: string;
     lifespanMS: number;
-    sounds: Array<string>;
+    sounds?: Array<string>;
     volume: number;
     particleInterval: NodeJS.Timer;
     numParticles: number;
@@ -105,25 +119,25 @@ export class SignalsController {
             "intervalMS": 600,
         });
         this.addSupportedSignal({
-            "name": "handRaised",
-            "label": "Raise your hand",
-            "imageSRC": SignalHandRaised,
-            "start": new Point3D({x: 0, z: -AVATAR.RADIUS_M}),
-            "target": new Point3D({x: 0, z: -AVATAR.RADIUS_M * 1.7}),
+            "name": "joy",
+            "label": "Joy emoji",
+            "imageSRC": SignalJoy,
+            "start": new Point3D({x: AVATAR.RADIUS_M / 2, z: -AVATAR.RADIUS_M / 2}),
+            "target": new Point3D({x: AVATAR.RADIUS_M, z: -AVATAR.RADIUS_M}),
             "dimensionsM": new Point3D({
                 x: 0.23,
                 z: 0.23,
             }),
             "dimensionsMEnd": new Point3D({
-                x: 0.3,
-                z: 0.3,
+                x: 0.17,
+                z: 0.17,
             }),
-            "lifespanMS": 5500,
-            "sounds": [SoundHandRaised01, SoundHandRaised02],
+            "lifespanMS": 1200,
+            "sounds": [SoundJoy],
             "volume": 0.35,
             "opacityEnd": 0.0,
-            "numParticles": 1,
-            "intervalMS": 1200,
+            "numParticles": 3,
+            "intervalMS": 450,
         });
         this.addSupportedSignal({
             "name": "party",
@@ -147,6 +161,48 @@ export class SignalsController {
             "intervalMS": 500,
         });
         this.addSupportedSignal({
+            "name": "handRaised",
+            "label": "Raise your hand",
+            "imageSRC": SignalHandRaised,
+            "start": new Point3D({x: 0, z: -AVATAR.RADIUS_M}),
+            "target": new Point3D({x: 0, z: -AVATAR.RADIUS_M * 1.7}),
+            "dimensionsM": new Point3D({
+                x: 0.23,
+                z: 0.23,
+            }),
+            "dimensionsMEnd": new Point3D({
+                x: 0.3,
+                z: 0.3,
+            }),
+            "lifespanMS": 5500,
+            "sounds": [SoundHandRaised01, SoundHandRaised02],
+            "volume": 0.35,
+            "opacityEnd": 0.0,
+            "numParticles": 1,
+            "intervalMS": 1200,
+        });
+        this.addSupportedSignal({
+            "name": "clap",
+            "label": "Clapping hands emoji",
+            "imageSRC": SignalClap,
+            "start": new Point3D({x: AVATAR.RADIUS_M / 2, z: -AVATAR.RADIUS_M / 2}),
+            "target": new Point3D({x: AVATAR.RADIUS_M, z: -AVATAR.RADIUS_M}),
+            "dimensionsM": new Point3D({
+                x: 0.23,
+                z: 0.23,
+            }),
+            "dimensionsMEnd": new Point3D({
+                x: 0.23,
+                z: 0.23,
+            }),
+            "lifespanMS": 500,
+            "sounds": [SoundClap01, SoundClap02, SoundClap03, SoundClap04, SoundClap05, SoundClap06, SoundClap07, SoundClap08, SoundClap09, SoundClap10, SoundClap11, SoundClap12, SoundClap13, SoundClap14, SoundClap15, SoundClap16],
+            "volume": 0.35,
+            "opacityEnd": 0.0,
+            "numParticles": 1,
+            "intervalMS": 500,
+        });
+        this.addSupportedSignal({
             "name": "heart",
             "label": "Heart emoji",
             "imageSRC": SignalHeart,
@@ -166,48 +222,6 @@ export class SignalsController {
             "opacityEnd": 0.0,
             "numParticles": 3,
             "intervalMS": 500,
-        });
-        this.addSupportedSignal({
-            "name": "joy",
-            "label": "Joy emoji",
-            "imageSRC": SignalJoy,
-            "start": new Point3D({x: AVATAR.RADIUS_M / 2, z: -AVATAR.RADIUS_M / 2}),
-            "target": new Point3D({x: AVATAR.RADIUS_M, z: -AVATAR.RADIUS_M}),
-            "dimensionsM": new Point3D({
-                x: 0.23,
-                z: 0.23,
-            }),
-            "dimensionsMEnd": new Point3D({
-                x: 0.17,
-                z: 0.17,
-            }),
-            "lifespanMS": 1200,
-            "sounds": [SoundJoy],
-            "volume": 0.35,
-            "opacityEnd": 0.0,
-            "numParticles": 3,
-            "intervalMS": 450,
-        });
-        this.addSupportedSignal({
-            "name": "poo",
-            "label": "Poo emoji",
-            "imageSRC": SignalPoo,
-            "start": new Point3D({x: AVATAR.RADIUS_M / 2, z: -AVATAR.RADIUS_M / 2}),
-            "target": new Point3D({x: AVATAR.RADIUS_M, z: -AVATAR.RADIUS_M * 0.75}),
-            "dimensionsM": new Point3D({
-                x: 0.23,
-                z: 0.23,
-            }),
-            "dimensionsMEnd": new Point3D({
-                x: 0.2,
-                z: 0.2,
-            }),
-            "lifespanMS": 3000,
-            "sounds": [SoundPoo01, SoundPoo02],
-            "volume": 0.35,
-            "opacityEnd": 0.0,
-            "numParticles": 3,
-            "intervalMS": 1000,
         });
         this.addSupportedSignal({
             "name": "interrobang",
@@ -298,7 +312,7 @@ export class SignalsController {
         }
     }
 
-    addSupportedSignal({name, label, start, target, dimensionsM, dimensionsMEnd, imageSRC, lifespanMS, sounds, volume, opacityEnd, numParticles, intervalMS}: {name: string, label: string, start: Point3D, target: Point3D, dimensionsM: Point3D, dimensionsMEnd: Point3D, imageSRC: string, lifespanMS: number, sounds: Array<string>, volume: number, opacityEnd: number, numParticles: number, intervalMS: number}) {
+    addSupportedSignal({name, label, start, target, dimensionsM, dimensionsMEnd, imageSRC, lifespanMS, sounds, volume, opacityEnd, numParticles, intervalMS}: {name: string, label: string, start: Point3D, target: Point3D, dimensionsM: Point3D, dimensionsMEnd: Point3D, imageSRC: string, lifespanMS: number, sounds?: Array<string>, volume: number, opacityEnd: number, numParticles: number, intervalMS: number}) {
         let buttonEl = document.createElement("button");
         buttonEl.classList.add('signalButton', `signalButton--${name}`);
         buttonEl.setAttribute("aria-label", label);
@@ -441,6 +455,10 @@ export class SignalsController {
         if ((forcePlaySound || isCloseEnough) && params.emitsSound) {
             if (parentAvatar) {
                 let sounds = localSignalParams.sounds;
+
+                if (!sounds) {
+                    return;
+                }
                 let src = sounds[Math.floor(Math.random() * sounds.length)];
     
                 howlerController.playSound({ src: src, positionM: parentAvatar.positionCurrent, randomSoundRate: true, tag: "environment" });
