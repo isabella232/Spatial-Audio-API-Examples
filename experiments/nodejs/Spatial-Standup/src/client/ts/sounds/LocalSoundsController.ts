@@ -111,7 +111,7 @@ export class HowlerController {
             "z": 0
         };
 
-        console.log(`In Howler coordinates, playing sound at position relative to listener of\n{x: ${originalSoundPosition.x}, y: ${originalSoundPosition.y}, z: ${originalSoundPosition.z}}`);
+        console.log(`Playing Howl \`${src}\` at relative position \`{x: ${originalSoundPosition.x}, y: ${originalSoundPosition.y}, z: ${originalSoundPosition.z}}\``);
 
         sound.pos(originalSoundPosition.x, originalSoundPosition.y, originalSoundPosition.z);
         if (randomSoundRate) {

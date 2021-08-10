@@ -492,13 +492,33 @@ export class TwoDimensionalRenderer {
         const pxPerM = physicsController.pxPerMCurrent;
 
         particleController.activeParticles.forEach((particle) => {
-            if (!particle.currentWorldPositionM.x || !particle.currentWorldPositionM.z ||
+            if (!particle.currentRelativeOrWorldPositionM ||
                 !particle.dimensionsM.x || !particle.dimensionsM.z ||
                 !particle.image.complete) {
                 return;
             }
-            normalModeCTX.translate(particle.currentWorldPositionM.x * pxPerM, particle.currentWorldPositionM.z * pxPerM);
-            let amtToRotateParticle = this.canvasRotationDegrees * Math.PI / 180;
+
+            let amtToTranslateDueToAvatar = {"x": 0, "y": 0};
+            let amtToRotateDueToAvatar = 0;
+            if (particle.parentAvatarVisitIDHash) {
+                let allUserData = userDataController.allOtherUserData.concat(userDataController.myAvatar.myUserData);
+                let a = allUserData.find((e) => { return e.visitIDHash === particle.parentAvatarVisitIDHash; });
+
+                if (a) {
+                    let yawDegrees = a.orientationEulerCurrent ? a.orientationEulerCurrent.yawDegrees : 0;
+                    amtToRotateDueToAvatar = -yawDegrees * Math.PI / 180;
+
+                    amtToTranslateDueToAvatar.x = a.positionCurrent.x * pxPerM;
+                    amtToTranslateDueToAvatar.y = a.positionCurrent.z * pxPerM;
+                }
+            }
+            normalModeCTX.translate(amtToTranslateDueToAvatar.x, amtToTranslateDueToAvatar.y);
+            normalModeCTX.rotate(amtToRotateDueToAvatar);
+
+            let 
+            amtToTranslateDueToParticle = {"x": particle.currentRelativeOrWorldPositionM.x * pxPerM, "y": particle.currentRelativeOrWorldPositionM.z * pxPerM};
+            normalModeCTX.translate(amtToTranslateDueToParticle.x, amtToTranslateDueToParticle.y);
+            let amtToRotateParticle = this.canvasRotationDegrees * Math.PI / 180 - amtToRotateDueToAvatar;
             normalModeCTX.rotate(amtToRotateParticle);
 
             let oldAlpha = normalModeCTX.globalAlpha;
@@ -512,8 +532,12 @@ export class TwoDimensionalRenderer {
                 particle.dimensionsM.z * pxPerM);
 
             normalModeCTX.globalAlpha = oldAlpha;
+
             normalModeCTX.rotate(-amtToRotateParticle);
-            normalModeCTX.translate(-particle.currentWorldPositionM.x * pxPerM, -particle.currentWorldPositionM.z * pxPerM);
+            normalModeCTX.translate(-amtToTranslateDueToParticle.x, -amtToTranslateDueToParticle.y);
+
+            normalModeCTX.rotate(-amtToRotateDueToAvatar);
+            normalModeCTX.translate(-amtToTranslateDueToAvatar.x, -amtToTranslateDueToAvatar.y);
         });
     }
 

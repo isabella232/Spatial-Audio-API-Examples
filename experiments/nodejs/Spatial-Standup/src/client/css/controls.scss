@@ -250,14 +250,6 @@ $bottom-controls-container-height: 72px;
     }
 }
 
-.normalModeCanvas--positiveCursor {
-    cursor: url('../images/signalStar.png') 10 10, auto;
-}
-
-.normalModeCanvas--negativeCursor {
-    cursor: url('../images/signalLine.png') 10 10, auto;
-}
-
 .bottomBar {
     height: $bottom-controls-container-height;
     position: fixed;

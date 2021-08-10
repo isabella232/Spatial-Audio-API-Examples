@@ -126,6 +126,8 @@ export class UserInputController {
                 if (this.documentKeyboardEventCache[0].ctrlKey) {
                     this.documentKeyboardEventCache[0].preventDefault();
                     editorModeController.toggleEditorMode();
+                } else {
+                    signalsController.toggleSignalContainerVisibility();
                 }
                 break;
             case CONTROLS.M_KEY_CODE:
@@ -147,12 +149,6 @@ export class UserInputController {
                 physicsController.smoothZoomStartTimestamp = undefined;
                 physicsController.pxPerMTarget = (physicsController.pxPerMTarget || physicsController.pxPerMCurrent) + PHYSICS.PX_PER_M_STEP;
                 break;
-            case CONTROLS.DIGIT1_KEY_CODE:
-                signalsController.toggleActiveSignal(signalsController.supportedSignals.get("positive"));
-                break;
-            case CONTROLS.DIGIT2_KEY_CODE:
-                signalsController.toggleActiveSignal(signalsController.supportedSignals.get("negative"));
-                break;
             case CONTROLS.SLASH_KEY_CODE:
                 uiController.showKeyboardShortcutsModal();
                 break;
@@ -163,6 +159,7 @@ export class UserInputController {
                 uiController.hideScreenShareUI();
                 roomController.hideRoomList();
                 uiController.hideKeyboardShortcutsModal();
+                signalsController.hideSignalContainer();
                 this.hideSettingsMenu();
                 break;
         }
@@ -304,6 +301,7 @@ export class UserInputController {
 
     toggleShowSettingsMenu() {
         roomController.hideRoomList();
+        signalsController.hideSignalContainer();
 
         let settingsMenu = document.querySelector(".settingsMenu");
         if (settingsMenu) {
@@ -561,18 +559,7 @@ export class UserInputController {
     handleCanvasClick(event: TouchEvent | MouseEvent | PointerEvent) {
         editorModeController.handleCanvasClick(event);
 
-        if (signalsController.activeSignal && (event instanceof MouseEvent || event instanceof PointerEvent)) {
-            let clickM = new Point3D(Utilities.normalModeCanvasPXToM({ x: event.offsetX, y: event.offsetY }));
-
-            let isCloseEnough = false;
-            if (userDataController.myAvatar.myUserData && userDataController.myAvatar.myUserData.positionCurrent) {
-                isCloseEnough = Utilities.getDistanceBetween2DPoints(userDataController.myAvatar.myUserData.positionCurrent.x, userDataController.myAvatar.myUserData.positionCurrent.z, clickM.x, clickM.z) < PARTICLES.CLOSE_ENOUGH_ADD_M;
-            }
-
-            if (isCloseEnough) {
-                signalsController.addActiveSignal(clickM);
-            }
-        } else if (this.highlightedUserData) {
+        if (this.highlightedUserData) {
             uiController.showAvatarContextMenu(this.highlightedUserData);
             this.highlightedUserData = undefined;
         } else if (this.highlightedScreenShareIconUserData) {
@@ -624,6 +611,7 @@ export class UserInputController {
         roomController.hideRoomList();
         uiController.hideAvatarContextMenu();
         uiController.hideKeyboardShortcutsModal();
+        signalsController.hideSignalContainer();
         this.hideSettingsMenu();
 
         let target = <HTMLElement>event.target;

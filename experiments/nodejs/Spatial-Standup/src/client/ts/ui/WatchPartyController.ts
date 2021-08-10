@@ -177,6 +177,7 @@ export class WatchPartyController {
         uiController.hideAvatarContextMenu();
         uiController.hideKeyboardShortcutsModal();
         userInputController.hideSettingsMenu();
+        signalsController.hideSignalContainer();
 
         let target = <HTMLElement>event.target;
 

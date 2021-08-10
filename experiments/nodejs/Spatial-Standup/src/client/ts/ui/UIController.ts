@@ -1,4 +1,4 @@
-import { accessibilityController, connectionController, physicsController, roomController, s3Controller, twoDimensionalRenderer, uiThemeController, userDataController, userInputController, videoController, webSocketConnectionController } from '..';
+import { accessibilityController, connectionController, physicsController, roomController, s3Controller, signalsController, twoDimensionalRenderer, uiThemeController, userDataController, userInputController, videoController, webSocketConnectionController } from '..';
 import '../../css/controls.scss';
 import { AudionetInitResponse } from '../connection/ConnectionController';
 import { UserData } from '../userData/UserDataController';
@@ -1248,6 +1248,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
 
     showAvatarContextMenu(userData: UserData) {
         roomController.hideRoomList();
+        signalsController.hideSignalContainer();
 
         let topBar = document.querySelector(".topBar");
         if (topBar) {
