@@ -6,17 +6,13 @@ import SignalParty from '../../images/signals/party.png';
 import SignalHeart from '../../images/signals/heart.png';
 import SignalJoy from '../../images/signals/joy.png';
 import SignalInterrobang from '../../images/signals/interrobang.png';
-import Signal100 from '../../images/signals/100.png';
+import SignalNoEntry from '../../images/signals/noEntry.png';
 import SignalClap from '../../images/signals/clap.png';
-import SoundSmile from '../../audio/smile.mp3';
-import SoundHandRaised01 from '../../audio/handRaised01.mp3';
-import SoundHandRaised02 from '../../audio/handRaised02.mp3';
+import SoundHandRaised03 from '../../audio/HandRaised03.mp3';
 import SoundParty from '../../audio/party.mp3';
 import SoundHeart from '../../audio/heart.mp3';
 import SoundJoy from '../../audio/joy.mp3';
 import SoundInterrobang from '../../audio/interrobang.mp3';
-import Sound10001 from '../../audio/10001.mp3';
-import Sound10002 from '../../audio/10002.mp3';
 import SoundClap01 from '../../audio/clap01.wav';
 import SoundClap02 from '../../audio/clap02.wav';
 import SoundClap03 from '../../audio/clap03.wav';
@@ -33,6 +29,12 @@ import SoundClap13 from '../../audio/clap13.wav';
 import SoundClap14 from '../../audio/clap14.wav';
 import SoundClap15 from '../../audio/clap15.wav';
 import SoundClap16 from '../../audio/clap16.wav';
+import PositiveDingC4 from '../../audio/positiveDingC4.mp3';
+import PositiveDingE4 from '../../audio/positiveDingE4.mp3';
+import PositiveDingG4 from '../../audio/positiveDingG4.mp3';
+import NegativeDingC2 from '../../audio/negativeDingC2.mp3';
+import NegativeDingDsharp2 from '../../audio/negativeDingDsharp2.mp3';
+import NegativeDingG2 from '../../audio/negativeDingG2.mp3';
 import { EasingFunctions, Utilities } from "../utilities/Utilities";
 import { AVATAR, PARTICLES, SIGNALS } from "../constants/constants";
 import { connectionController, howlerController, localSoundsController, particleController, uiThemeController, userDataController, webSocketConnectionController } from "..";
@@ -51,6 +53,7 @@ export interface Signal {
     imageSRC: string;
     lifespanMS: number;
     sounds?: Array<string>;
+    randomSoundRate: boolean;
     volume: number;
     particleInterval: NodeJS.Timer;
     numParticles: number;
@@ -112,7 +115,8 @@ export class SignalsController {
                 z: 0.15,
             }),
             "lifespanMS": 2500,
-            "sounds": [SoundSmile],
+            "sounds": [PositiveDingC4, PositiveDingE4, PositiveDingG4],
+            "randomSoundRate": false,
             "volume": 0.35,
             "opacityEnd": 0.0,
             "numParticles": 5,
@@ -175,7 +179,8 @@ export class SignalsController {
                 z: 0.3,
             }),
             "lifespanMS": 5500,
-            "sounds": [SoundHandRaised01, SoundHandRaised02],
+            "sounds": [SoundHandRaised03],
+            "randomSoundRate": false,
             "volume": 0.35,
             "opacityEnd": 0.0,
             "numParticles": 1,
@@ -218,6 +223,7 @@ export class SignalsController {
             }),
             "lifespanMS": 2500,
             "sounds": [SoundHeart],
+            "randomSoundRate": false,
             "volume": 0.35,
             "opacityEnd": 0.0,
             "numParticles": 3,
@@ -245,9 +251,9 @@ export class SignalsController {
             "intervalMS": 450,
         });
         this.addSupportedSignal({
-            "name": "100",
-            "label": "100 emoji",
-            "imageSRC": Signal100,
+            "name": "noEntry",
+            "label": "No Entry emoji",
+            "imageSRC": SignalNoEntry,
             "start": new Point3D({x: AVATAR.RADIUS_M, z: -AVATAR.RADIUS_M}),
             "target": new Point3D({x: AVATAR.RADIUS_M * 1.2, z: -AVATAR.RADIUS_M * 1.2}),
             "dimensionsM": new Point3D({
@@ -259,7 +265,8 @@ export class SignalsController {
                 z: 0.17,
             }),
             "lifespanMS": 1200,
-            "sounds": [Sound10001, Sound10002],
+            "sounds": [NegativeDingC2, NegativeDingDsharp2, NegativeDingG2],
+            "randomSoundRate": false,
             "volume": 0.35,
             "opacityEnd": 0.0,
             "numParticles": 1,
@@ -315,7 +322,7 @@ export class SignalsController {
         }
     }
 
-    addSupportedSignal({name, label, start, target, dimensionsM, dimensionsMEnd, imageSRC, lifespanMS, sounds, volume, opacityEnd, numParticles, intervalMS}: {name: string, label: string, start: Point3D, target: Point3D, dimensionsM: Point3D, dimensionsMEnd: Point3D, imageSRC: string, lifespanMS: number, sounds?: Array<string>, volume: number, opacityEnd: number, numParticles: number, intervalMS: number}) {
+    addSupportedSignal({name, label, start, target, dimensionsM, dimensionsMEnd, imageSRC, lifespanMS, sounds, randomSoundRate = true, volume, opacityEnd, numParticles, intervalMS}: {name: string, label: string, start: Point3D, target: Point3D, dimensionsM: Point3D, dimensionsMEnd: Point3D, imageSRC: string, lifespanMS: number, sounds?: Array<string>, randomSoundRate?: boolean, volume: number, opacityEnd: number, numParticles: number, intervalMS: number}) {
         let buttonEl = document.createElement("button");
         buttonEl.classList.add('signalButton', `signalButton--${name}`);
         buttonEl.setAttribute("aria-label", label);
@@ -335,6 +342,7 @@ export class SignalsController {
             "imageSRC": imageSRC,
             "lifespanMS": lifespanMS,
             "sounds": sounds,
+            "randomSoundRate": randomSoundRate,
             "volume": volume,
             "opacityEnd": opacityEnd,
             "numParticles": numParticles,
@@ -464,7 +472,7 @@ export class SignalsController {
                 }
                 let src = sounds[Math.floor(Math.random() * sounds.length)];
     
-                howlerController.playSound({ src: src, positionM: parentAvatar.positionCurrent, randomSoundRate: true, tag: "environment" });
+                howlerController.playSound({ src: src, positionM: parentAvatar.positionCurrent, randomSoundRate: localSignalParams.randomSoundRate, tag: "environment" });
             } else {
                 this.playSignalSound(params.name);
             }
