@@ -8,7 +8,7 @@ import SignalJoy from '../../images/signals/joy.png';
 import SignalInterrobang from '../../images/signals/interrobang.png';
 import SignalNoEntry from '../../images/signals/noEntry.png';
 import SignalClap from '../../images/signals/clap.png';
-import SoundHandRaised03 from '../../audio/HandRaised03.mp3';
+import SoundHandRaised03 from '../../audio/handRaised03.mp3';
 import SoundParty from '../../audio/party.mp3';
 import SoundHeart from '../../audio/heart.mp3';
 import SoundJoy from '../../audio/joy.mp3';
