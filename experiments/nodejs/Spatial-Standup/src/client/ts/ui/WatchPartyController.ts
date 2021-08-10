@@ -1,5 +1,5 @@
 import '../../css/watchParty.scss';
-import { connectionController, howlerController, roomController, uiController, userDataController, userInputController, videoController, webSocketConnectionController } from "..";
+import { connectionController, howlerController, roomController, signalsController, uiController, userDataController, userInputController, videoController, webSocketConnectionController } from "..";
 import { SpatialStandupRoom } from "./RoomController";
 import { MyAvatarModes, UserData } from "../userData/UserDataController";
 import { Utilities } from '../utilities/Utilities';
