@@ -285,6 +285,9 @@ export class SignalsController {
         this.toggleSoundsCheckbox.id = "toggleSoundsCheckbox";
         this.toggleSoundsCheckbox.classList.add("toggleSoundsCheckbox");
         this.toggleSoundsCheckbox.type = "checkbox";
+        if (!localStorage.getItem("toggleSoundsEnabled")) {
+            localStorage.setItem("toggleSoundsEnabled", "true");
+        }
         this.toggleSoundsCheckbox.checked = localStorage.getItem("toggleSoundsEnabled") === "true";
         this.toggleSoundsCheckbox.addEventListener("click", (e) => {
             localStorage.setItem("toggleSoundsEnabled", this.toggleSoundsCheckbox.checked ? "true" : "false");
