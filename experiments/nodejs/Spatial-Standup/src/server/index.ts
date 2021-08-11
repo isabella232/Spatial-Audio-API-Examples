@@ -373,6 +373,46 @@ app.get('/slack', (req: any, res: any, next: any) => {
 });
 
 app.post('/create', (req: any, res: any, next: any) => {
+    let requestTimestamp = req.headers['x-slack-request-timestamp'];
+    if (!requestTimestamp) {
+        console.error(`\`/create\`: Couldn't extract \`x-slack-request-timestamp\` from header! Ignoring...`);
+        res.status(500).send();
+        return;
+    }
+
+    let requestSignature = req.headers['x-slack-signature'];
+    if (!requestSignature) {
+        console.error(`\`/create\`: Couldn't extract \`x-slack-signature\` from header! Ignoring...`);
+        res.status(500).send();
+        return;
+    }
+    
+    if (Math.abs((Date.now() / 1000) - requestTimestamp) > 60 * 5) {
+        console.error(`\`/create\`: Request is more than five minutes old/new! Ignoring...`);
+        res.status(500).send();
+        return;
+    }
+
+    let sigBaseString = `v0:${requestTimestamp}:`;
+    let keys = Object.keys(req.body);
+    let values = Object.values(req.body);
+    for (let i = 0; i < keys.length; i++) {
+        if (i > 0) {
+            sigBaseString += `&`;
+        }
+        sigBaseString += `${keys[i]}=${encodeURIComponent(<string>values[i])}`;
+    }
+
+    const hmac = crypto.createHmac('sha256', auth.SLACK_SIGNING_SECRET);
+    hmac.update(sigBaseString, "utf-8");
+    const digest = `v0=${hmac.digest("hex")}`;
+
+    if (digest !== requestSignature) {
+        console.error(`\`/create\`: Request signature could not be verified! Ignoring...`);
+        res.status(500).send();
+        return;
+    }
+
     let slackChannelID = req.body.channel_id;
     if (!slackChannelID) {
         console.error(`Couldn't generate Spatial Standup link. Request body:\n${JSON.stringify(req.body)}`);

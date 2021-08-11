@@ -11,6 +11,7 @@
 
     "SLACK_CLIENT_ID": "",
     "SLACK_CLIENT_SECRET": "",
+    "SLACK_SIGNING_SECRET": "",
 
     "TEAMS_BOT_ID": "",
     "TEAMS_BOT_PASSWORD": "",
