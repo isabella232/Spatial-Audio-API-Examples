@@ -27,6 +27,7 @@ class AudioSource {
         return this.srcObject = new MediaStream([this.track]);
     }
     load() {
+        this.pause();
         this.readyState = true; // We don't do specific streaming values.
         delete this.stroke;
     }
