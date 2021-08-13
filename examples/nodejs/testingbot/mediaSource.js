@@ -23,7 +23,6 @@ class MediaSource extends AudioSource {
         this.readyState = 0;
     }
     async load() {
-        this.pause();
         const url = new URL(this.url),
               start = new Date().getTime(),
               buffer = (url.protocol === 'file:') ? await readFile(url.pathname) : await fetch(url.href).then(response => response.buffer()),
