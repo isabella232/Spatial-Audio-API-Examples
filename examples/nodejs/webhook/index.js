@@ -1,4 +1,3 @@
-const fetch = require('node-fetch');
 const { default: SignJWT } = require('jose/jwt/sign');
 const { jwtVerify } = require('jose/jwt/verify');
 const { JWTExpired } = require('jose/util/errors');
@@ -8,12 +7,6 @@ const crypto = require('crypto');
 // This is your "webhook-secret" as you have set from the High Fidelity REST API. Do not share this string.
 const WEBHOOK_SECRET = "aaaaaaaa-1111-bbbb-2222-cccccccccccc";
 const WEBHOOK_SECRET_KEY = crypto.createSecretKey(Buffer.from(WEBHOOK_SECRET, "utf8"));
-// This is your test webhook endpoint URL as you have created on Pipedream, which will allow you to test receiving webhook events from your High Fidelity Spatial Audio app. Do not share this URL.
-const PIPEDREAM_WEBHOOK_ENDPOINT = "https://aaaabbbbaaaabbbbaaaabbbbaaaabbbb.m.pipedream.net";
-// This is your API key as obtained from your Pipedream account settings. Do not share this string.
-const PIPEDREAM_AUTHORIZATION_TOKEN = "aaaabbbbaaaabbbbaaaabbbbaaaabbbb";
-// Poll received webhook events from the remote Pipedream endpoint at this frequency.
-const PIPEDREAM_POLL_RATE_SECONDS = 60;
 // If set to a positive number, this server will accept expired webhook events this many seconds expired. This should be 0 on production servers. For testing purposes only, such as to replay webhook events, set to a large number (ex: 9999999999).
 const EXPIRATION_TOLERANCE_SECONDS = 0;
 
@@ -93,93 +86,9 @@ async function processWebhookEvent(headers, payload, recomputeClientData) {
     return false;
 }
 
-async function fetchPipedreamSourceID() {
-    let requestPath = "https://api.pipedream.com/v1/users/me/sources";
-    console.log("GET " + requestPath);
-    const response = await fetch(requestPath, {
-        headers: { "Authorization": `Bearer ${PIPEDREAM_AUTHORIZATION_TOKEN}` }
-    });
-    let responseJSON = await response.json();
-
-    let id = undefined;
-    for (let datum of Object.values(responseJSON["data"])) {
-        let config = datum["configured_props"];
-        if (!config) {
-            continue;
-        }
-        let httpConfig = config["http"];
-        if (!httpConfig) {
-            continue;
-        }
-        let endpointURL = httpConfig["endpoint_url"];
-        if (endpointURL && endpointURL === PIPEDREAM_WEBHOOK_ENDPOINT) {
-            id = datum["id"];
-            break;
-        }
-    }
-    return id;
-}
-
-let lastPipedreamEventID = undefined;
-
-async function pollPipedreamEvents(pipedreamSourceID) {
-    let requestPath = `https://api.pipedream.com/v1/sources/${pipedreamSourceID}/event_summaries?expand=event&limit=100`
-    // Only parse events after lastPipedreamEventID, if it is defined
-    if (lastPipedreamEventID !== undefined) {
-        requestPath += `&after=${lastPipedreamEventID}`
-    }
-    const response = await fetch(requestPath, {
-        headers: { "Authorization": `Bearer ${PIPEDREAM_AUTHORIZATION_TOKEN}` }
-    });
-    console.log("GET " + requestPath);
-    let responseJSON = await response.json();
-
-    let webhookEvents = [];
-    try {
-        if (responseJSON["page_info"]["count"] > 0) {
-            for (let datum of Object.values(responseJSON["data"])) {
-                webhookEvents.push({
-                    "headers": datum["event"]["headers"],
-                    "body": datum["event"]["body"]
-                });
-            }
-
-            // Update our memory of the last webhook event we have processed
-            lastPipedreamEventID = responseJSON["page_info"]["end_cursor"];
-        }
-    } catch (error) {
-        console.error(`Unable to parse data from Pipedream. Error:\n${error}`);
-        return;
-    }
-
-    if (webhookEvents.length > 0) {
-        let numWebhooksParsed = 0;
-        console.log(`Received ${webhookEvents.length} candidate webhook events from Pipedream`);
-        for (let webhookEvent of webhookEvents) {
-            let webhookProcessed = await processWebhookEvent(webhookEvent["headers"], webhookEvent["body"], false);
-            numWebhooksParsed += webhookProcessed ? 1 : 0;
-        }
-        if (numWebhooksParsed > 0) {
-            statsPerSpaceClientData = getRecomputedClientData(statsPerSpace);
-        }
-        console.log(`Accepted ${numWebhooksParsed} webhook events from Pipedream`);
-    } else {
-        console.log(`Already up-to-date on webhook events`);
-    }
-}
-
 if (EXPIRATION_TOLERANCE_SECONDS > 0) {
     console.log("WARNING: Accepting expired webhook events");
 }
-
-// This code queries Pipedream for webhook events it has stored 
-fetchPipedreamSourceID().then((pipedreamSourceID) => {
-    if (pipedreamSourceID) {
-        pollPipedreamEvents(pipedreamSourceID).then(() => {
-            setInterval(() => { pollPipedreamEvents(pipedreamSourceID); }, PIPEDREAM_POLL_RATE_SECONDS * 1000);
-        });
-    }
-});
 
 // This renders the stats page
 app.get('/', async (req, res) => {
