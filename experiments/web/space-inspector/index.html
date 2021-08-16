@@ -171,7 +171,8 @@
 
         <script src="https://threejs.org/build/three.min.js"></script>
         <!--<script src="HighFidelityAudio-latest.js"></script>-->
-        <script src="https://hifi-spatial-audio-api.s3-us-west-2.amazonaws.com/releases/latest/HighFidelityAudio-latest.js"></script>
+        <!-- <script src="https://hifi-spatial-audio-api.s3-us-west-2.amazonaws.com/releases/latest/HighFidelityAudio-latest.js"></script> -->
+        <script src="/HighFidelityAudio-729b5c9-transmitAllQuat.js"></script>
       
         <script>
             const DEG_TO_RAD = Math.PI / 180;
@@ -449,7 +450,7 @@
                 }
 
                 getHifiOrientationQuat() {
-                    return new HighFidelityAudio.OrientationQuat3D({
+                    return new HighFidelityAudio.Quaternion({
                             x: this._node.quaternion.x,
                             y: this._node.quaternion.y,
                             z: this._node.quaternion.z,
@@ -469,11 +470,11 @@
                 }
 
                 getHifiOrientationEuler() {
-                    return new HighFidelityAudio.OrientationEuler3D({
-                                pitchDegrees: RAD_TO_DEG * this._node.rotation.x,
-                                yawDegrees: RAD_TO_DEG * this._node.rotation.y,
-                                rollDegrees: RAD_TO_DEG * this._node.rotation.z
-                            });
+                    return {
+                        pitchDegrees: RAD_TO_DEG * this._node.rotation.x,
+                        yawDegrees: RAD_TO_DEG * this._node.rotation.y,
+                        rollDegrees: RAD_TO_DEG * this._node.rotation.z
+                    };
                 }
 
                 
@@ -1020,12 +1021,12 @@
                     console.log(`Connecting Receiver: ` + this.name + ` to High Fidelity Audio API Servers...`);
                     // Setup the communicator
                     let currentPosition = this.getHifiPosition();
-                    let currentOrientationEuler = this.getHifiOrientationEuler();
+                    let currentOrientationQuat = this.getHifiOrientationQuat();
 
                     this.hifiCommunicator = new HighFidelityAudio.HiFiCommunicator({
                         initialHiFiAudioAPIData: new HighFidelityAudio.HiFiAudioAPIData({
                             position: currentPosition,
-                            orientationEuler: currentOrientationEuler
+                            orientation: currentOrientationQuat
                         }),
                         onConnectionStateChanged: this.onConnectionStateChanged.bind(this), // Subscribe to connection changes
                         onUsersDisconnected: onPlayerDisconnected
@@ -1035,8 +1036,7 @@
                     let userDataSubscription = new HighFidelityAudio.UserDataSubscription({
                         "components": [ HighFidelityAudio.AvailableUserDataSubscriptionComponents.VolumeDecibels,
                                         HighFidelityAudio.AvailableUserDataSubscriptionComponents.Position,
-                                        HighFidelityAudio.AvailableUserDataSubscriptionComponents.OrientationQuat,
-                                        HighFidelityAudio.AvailableUserDataSubscriptionComponents.OrientationEuler  ],
+                                        HighFidelityAudio.AvailableUserDataSubscriptionComponents.Orientation ],
                         "callback": onDataReceived
                     });
                     this.hifiCommunicator.addUserDataSubscription(userDataSubscription);
@@ -1140,11 +1140,11 @@
                     if (this.isConnected() && this.hifiCommunicator) {
                        
                         let currentPosition = this.getHifiPosition();
-                        let currentOrientationEuler = this.getHifiOrientationEuler();
+                        let currentOrientationQuat = this.getHifiOrientationQuat();
 
                         let response = this.hifiCommunicator.updateUserDataAndTransmit({
                             position: currentPosition,
-                            orientationEuler: currentOrientationEuler 
+                            orientation: currentOrientationQuat 
                         });
                     }
                 }
