@@ -41,8 +41,11 @@ export interface UserData {
     hiFiGainSliderValue?: string;
     volumeThreshold?: number;
     isAudioInputMuted?: boolean;
+    echoCancellationAvailable?: boolean;
     echoCancellationEnabled?: boolean;
+    agcAvailable?: boolean;
     agcEnabled?: boolean;
+    noiseSuppressionAvailable?: boolean;
     noiseSuppressionEnabled?: boolean;
     stereoInput?: boolean;
     currentWatchPartyRoomName?: string;
@@ -69,6 +72,13 @@ class MyAvatar {
     rotationalVelocityDegreesPerS: number = 0;
 
     constructor() {
+        let getSupportedConstraintsSupported = typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined";
+
+        let supportedConstraints;
+        if (getSupportedConstraintsSupported) {
+            supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
+        }
+
         this.myUserData = {
             visitIDHash: undefined,
             providedUserID: HIFI_PROVIDED_USER_ID,
@@ -92,8 +102,11 @@ class MyAvatar {
             hiFiGain: 1.0,
             hiFiGainSliderValue: "21",
             isAudioInputMuted: false,
+            echoCancellationAvailable: supportedConstraints.echoCancellation ? !!supportedConstraints.echoCancellation.valueOf() : false,
             echoCancellationEnabled: false,
+            agcAvailable: supportedConstraints.autoGainControl ? !!supportedConstraints.autoGainControl.valueOf() : false,
             agcEnabled: false,
+            noiseSuppressionAvailable: supportedConstraints.noiseSuppression ? !!supportedConstraints.noiseSuppression.valueOf() : false,
             noiseSuppressionEnabled: false,
             stereoInput: false,
             currentWatchPartyRoomName: undefined,

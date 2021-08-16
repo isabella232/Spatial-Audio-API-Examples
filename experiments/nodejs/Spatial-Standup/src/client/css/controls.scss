@@ -1164,7 +1164,6 @@ $bottom-controls-container-height: 72px;
     &:not(&--mine) {
         @include media("<=phone") {
             width: 100vw;
-            height: 100vh;
         }
 
         @include media(">phone") {

@@ -207,7 +207,7 @@ export class TwoDimensionalRenderer {
     }
 
     drawAvatarVideo({ userData }: { userData: UserData }) {
-        if (!videoController.providedUserIDToVideoElementMap.has(userData.providedUserID) || (userData.isStreamingVideo === VideoStreamingStates.SCREENSHARE && userInputController.highlightedUserData && userInputController.highlightedUserData.visitIDHash === userData.visitIDHash)) {
+        if (!videoController.providedUserIDToVideoElementMap.has(userData.providedUserID) || ((userData.isStreamingVideo === VideoStreamingStates.SCREENSHARE || userData.isStreamingVideo === VideoStreamingStates.CAMERA) && userInputController.highlightedUserData && userInputController.highlightedUserData.visitIDHash === userData.visitIDHash)) {
             return;
         }
 
@@ -253,7 +253,7 @@ export class TwoDimensionalRenderer {
 
     drawAvatarLabel({ userData }: { userData: UserData }) {
         // Don't draw the avatar label if we're drawing that avatar's video.
-        if ((videoController.providedUserIDToVideoElementMap.has(userData.providedUserID) || userData.profileImageEl) && !(!userData.profileImageEl && userData.isStreamingVideo === VideoStreamingStates.SCREENSHARE && userInputController.highlightedUserData && userInputController.highlightedUserData.visitIDHash === userData.visitIDHash)) {
+        if ((videoController.providedUserIDToVideoElementMap.has(userData.providedUserID) || userData.profileImageEl) && !(!userData.profileImageEl && (userData.isStreamingVideo === VideoStreamingStates.SCREENSHARE || userData.isStreamingVideo === VideoStreamingStates.CAMERA) && userInputController.highlightedUserData && userInputController.highlightedUserData.visitIDHash === userData.visitIDHash)) {
             return;
         }
 

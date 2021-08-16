@@ -15,8 +15,11 @@ interface WebSocketParticipantData {
     colorHex: string;
     profileImageURL: string;
     isAudioInputMuted: boolean;
+    echoCancellationAvailable: boolean;
     echoCancellationEnabled: boolean;
+    agcAvailable: boolean;
     agcEnabled: boolean;
+    noiseSuppressionAvailable: boolean;
     noiseSuppressionEnabled: boolean;
     hiFiGainSliderValue: string;
     volumeThreshold: number;
@@ -52,8 +55,11 @@ export class WebSocketConnectionController {
                     colorHex,
                     profileImageURL,
                     isAudioInputMuted,
+                    echoCancellationAvailable,
                     echoCancellationEnabled,
+                    agcAvailable,
                     agcEnabled,
+                    noiseSuppressionAvailable,
                     noiseSuppressionEnabled,
                     hiFiGainSliderValue,
                     volumeThreshold,
@@ -87,11 +93,20 @@ export class WebSocketConnectionController {
                         }
                         localUserData.isAudioInputMuted = isAudioInputMuted;
                     }
+                    if (typeof (echoCancellationAvailable) === "boolean") {
+                        localUserData.echoCancellationAvailable = echoCancellationAvailable;
+                    }
                     if (typeof (echoCancellationEnabled) === "boolean") {
                         localUserData.echoCancellationEnabled = echoCancellationEnabled;
                     }
+                    if (typeof (agcAvailable) === "boolean") {
+                        localUserData.agcAvailable = agcAvailable;
+                    }
                     if (typeof (agcEnabled) === "boolean") {
                         localUserData.agcEnabled = agcEnabled;
+                    }
+                    if (typeof (noiseSuppressionAvailable) === "boolean") {
+                        localUserData.noiseSuppressionAvailable = noiseSuppressionAvailable;
                     }
                     if (typeof (noiseSuppressionEnabled) === "boolean") {
                         localUserData.noiseSuppressionEnabled = noiseSuppressionEnabled;
@@ -155,8 +170,11 @@ export class WebSocketConnectionController {
                         colorHex,
                         profileImageURL,
                         isAudioInputMuted,
+                        echoCancellationAvailable,
                         echoCancellationEnabled,
+                        agcAvailable,
                         agcEnabled,
+                        noiseSuppressionAvailable,
                         noiseSuppressionEnabled,
                         hiFiGainSliderValue,
                         volumeThreshold,
@@ -307,8 +325,11 @@ export class WebSocketConnectionController {
             colorHex: myUserData.colorHex,
             profileImageURL: myUserData.profileImageURL,
             isAudioInputMuted: myUserData.isAudioInputMuted,
+            echoCancellationAvailable: myUserData.echoCancellationAvailable,
             echoCancellationEnabled: myUserData.echoCancellationEnabled,
+            agcAvailable: myUserData.agcAvailable,
             agcEnabled: myUserData.agcEnabled,
+            noiseSuppressionAvailable: myUserData.noiseSuppressionAvailable,
             noiseSuppressionEnabled: myUserData.noiseSuppressionEnabled,
             hiFiGainSliderValue: myUserData.hiFiGainSliderValue,
             volumeThreshold: myUserData.volumeThreshold,
@@ -332,8 +353,11 @@ export class WebSocketConnectionController {
             colorHex: myUserData.colorHex,
             profileImageURL: myUserData.profileImageURL,
             isAudioInputMuted: myUserData.isAudioInputMuted,
+            echoCancellationAvailable: myUserData.echoCancellationAvailable,
             echoCancellationEnabled: myUserData.echoCancellationEnabled,
+            agcAvailable: myUserData.agcAvailable,
             agcEnabled: myUserData.agcEnabled,
+            noiseSuppressionAvailable: myUserData.noiseSuppressionAvailable,
             noiseSuppressionEnabled: myUserData.noiseSuppressionEnabled,
             hiFiGainSliderValue: myUserData.hiFiGainSliderValue,
             volumeThreshold: myUserData.volumeThreshold,
