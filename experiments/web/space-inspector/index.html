@@ -172,7 +172,7 @@
         <script src="https://threejs.org/build/three.min.js"></script>
         <!--<script src="HighFidelityAudio-latest.js"></script>-->
         <!-- <script src="https://hifi-spatial-audio-api.s3-us-west-2.amazonaws.com/releases/latest/HighFidelityAudio-latest.js"></script> -->
-        <script src="./HighFidelityAudio-729b5c9.js"></script>
+        <script src="./HighFidelityAudio-6b60dcf.js"></script>
       
         <script>
             const DEG_TO_RAD = Math.PI / 180;
@@ -962,9 +962,9 @@
                         
                         let euler = new HighFidelityAudio.Quaternion(data.orientation).getEulerAngles();
                         this.setHifiOrientationEuler(
-                            euler.pitch,
-                            euler.yaw,
-                            euler.roll);
+                            euler.pitchDegrees,
+                            euler.yawDegrees,
+                            euler.rollDegrees);
                     }
                     this.receivedNewValues++;
                 }

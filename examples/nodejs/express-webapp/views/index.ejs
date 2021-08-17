@@ -119,7 +119,7 @@
 
     <div class="userDataContainer userDataContainer__fromServer"></div>
 
-    <script src="/HighFidelityAudio-729b5c9.js"></script>
+    <script src="/HighFidelityAudio-6b60dcf.js"></script>
     <script>
         let outputAudioEl = document.querySelector(`.outputAudioEl`);
         let userDataContainer__fromServer = document.querySelector(`.userDataContainer__fromServer`);
@@ -358,27 +358,27 @@
         }
 
         function subtractPitch() {
-            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ pitch: -45 }));
+            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ pitchDegrees: -45 }));
             updateAndTransmit();
         }
         function addPitch() {
-            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ pitch: 45 }));
+            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ pitchDegrees: 45 }));
             updateAndTransmit();
         }
         function subtractYaw() {
-            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ yaw: -45 }));
+            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ yawDegrees: -45 }));
             updateAndTransmit();
         }
         function addYaw() {
-            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ yaw: 45 }));
+            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ yawDegrees: 45 }));
             updateAndTransmit();
         }
         function subtractRoll() {
-            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ roll: -45 }));
+            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ rollDegrees: -45 }));
             updateAndTransmit();
         }
         function addRoll() {
-            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ roll: 45 }));
+            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ rollDegrees: 45 }));
             updateAndTransmit();
         }
 
