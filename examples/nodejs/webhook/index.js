@@ -7,7 +7,7 @@ const crypto = require('crypto');
 // This is your "webhook-secret" as you have set from the High Fidelity REST API. Do not share this string.
 const WEBHOOK_SECRET = "aaaaaaaa-1111-bbbb-2222-cccccccccccc";
 const WEBHOOK_SECRET_KEY = crypto.createSecretKey(Buffer.from(WEBHOOK_SECRET, "utf8"));
-// If set to a positive number, this server will accept expired webhook events this many seconds expired. This should be 0 on production servers. For testing purposes only, such as to replay webhook events, set to a large number (ex: 9999999999).
+// If set to a positive number, this server will accept expired webhook events this many seconds expired. This should be 0 on production servers. For testing purposes only, such as to replay webhook events, set to a large number (ex: 9999999999). A large negative number will cause the server to reject fresh webhook events as if they have expired.
 const EXPIRATION_TOLERANCE_SECONDS = 0;
 
 const app = express();
@@ -56,5 +56,5 @@ app.post('/', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`The High Fidelity Sample App is ready and listening at http://localhost:${PORT}`)
+    console.log(`The High Fidelity Webhook Endpoint Example is ready and listening at http://localhost:${PORT}`)
 });
