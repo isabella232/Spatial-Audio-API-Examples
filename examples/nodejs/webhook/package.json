@@ -9,7 +9,6 @@
   "author": "Sabrina Shanman",
   "license": "MIT",
   "dependencies": {
-    "ejs": "^3.1.5",
     "express": "^4.17.1",
     "jose": "^3.5.4"
   }
