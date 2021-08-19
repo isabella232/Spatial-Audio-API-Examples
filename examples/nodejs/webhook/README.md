@@ -16,13 +16,13 @@ In order for a production webserver to receive webhook events, [a webhook must c
 Once you have set up the webserver, the steps below will show how to send a mock webhook event to the webserver using `curl`
 
 - Stop the webserver if it is running.
-- Edit `index.js` and set the value of `WEBHOOK_SECRET` to `fb6f66df-9ace-4764-9d6e-ab786e7bf669`
+- Edit `index.js` and set the value of `WEBHOOK_SECRET` to `aaaaaaaa-1111-bbbb-2222-cccccccccccc`
     - This is a mock secret for this test only, and should not be used for your app.
 - Start the webserver in this directory with the command `npm run start`
 - In another command line window, run this `curl` command to send a mock webhook event:
 
     ```
-    curl -H "X-HighFidelity-Signature: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..0OjCwGidT8rzXX01xBBLcpRy05nex6i5fqYTz8mecbw " -H "Content-Type: application/json" --data '{"event-type":"connection-change","iat":1629147418,"exp":1660683418,"space-id":"ace3c85a-703b-6cb4-e541-2a140f9087cd","connected-user-count":1,"connection-changes":[{"visit-id-hash":"riH6LPNViJxfGSQ8z37wAf5yYJmuRiReeAAaMO92S1j=","jwt-user-id":"","new-connection-state":"connected"}]}' http://localhost:8080
+    curl -H "X-HighFidelity-Signature: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..XG_FvBwdqUS9TCTdZBT0htvEeUsuLmwWFwjVPdJdFBI" -H "Content-Type: application/json" --data '{"event-type":"connection-change","iat":1629147418,"exp":1660683418,"space-id":"ace3c85a-703b-6cb4-e541-2a140f9087cd","connected-user-count":1,"connection-changes":[{"visit-id-hash":"riH6LPNViJxfGSQ8z37wAf5yYJmuRiReeAAaMO92S1j=","jwt-user-id":"","new-connection-state":"connected"}]}' http://localhost:8080
     ```
 
     If this mock webhook event is sent before the expiration time, `2022-08-16 20:56:58.420181` (UTC time), you should see the following reply:
