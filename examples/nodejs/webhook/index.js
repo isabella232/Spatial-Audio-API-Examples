@@ -4,7 +4,8 @@ const { JWTExpired } = require('jose/util/errors');
 const express = require('express');
 const crypto = require('crypto');
 
-// This is your "webhook-secret" as you have set from the High Fidelity REST API. Do not share this string.
+// In production, WEBHOOK_SECRET should be set to your "webhook-secret" as you have set from the High Fidelity REST API. Do not share your app's "webhook-secret"
+// The secret "aaaaaaaa-1111-bbbb-2222-cccccccccccc" is a test secret which can be used to show how this webserver works using the instructions provided in README.md . It should not be used in production.
 const WEBHOOK_SECRET = "aaaaaaaa-1111-bbbb-2222-cccccccccccc";
 const WEBHOOK_SECRET_KEY = crypto.createSecretKey(Buffer.from(WEBHOOK_SECRET, "utf8"));
 // If set to a positive number, this server will accept expired webhook events this many seconds expired. This should be 0 on production servers. For testing purposes only, such as to replay webhook events, set to a large number (ex: 9999999999). A large negative number will cause the server to reject fresh webhook events as if they have expired.
