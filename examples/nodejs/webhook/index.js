@@ -16,7 +16,14 @@ const PORT = 8080;
 app.set('view engine', 'ejs');
 app.use(express.json());
 
-const FAKE_SECRET_KEY = crypto.createSecretKey(Buffer.from("fake_secret_aaaabbbbaaaabbbbaaaabbbb", "utf8"));
+function base64UrlEncodeString(s) {
+    return Buffer.from(s).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+function jwtEncodePayload(payload) {
+    return base64UrlEncodeString(JSON.stringify(payload));
+}
+
 const WEBHOOK_SIGNATURE_HEADER = "x-highfidelity-signature";
 async function parseAndValidateWebhookEvent(headers, payload) {
     let hifiSignature = headers[WEBHOOK_SIGNATURE_HEADER];
@@ -25,12 +32,9 @@ async function parseAndValidateWebhookEvent(headers, payload) {
         return undefined;
     }
     try {
-        let fakeJWT = await new SignJWT(payload)
-            .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
-            .sign(FAKE_SECRET_KEY);
-
+        let encodedPayload = jwtEncodePayload(payload);
         let realWebhookEventJWT = hifiSignature.split(".")[0] + "." +
-            fakeJWT.split(".")[1] + "." +
+            encodedPayload + "." +
             hifiSignature.split(".")[2];
         await jwtVerify(realWebhookEventJWT, WEBHOOK_SECRET_KEY, {"clockTolerance": EXPIRATION_TOLERANCE_SECONDS});
     } catch (error) {
