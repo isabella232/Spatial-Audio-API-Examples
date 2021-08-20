@@ -45,7 +45,7 @@
             <div class="userDataContainer userDataContainer__fromServer"></div>
         </div>
 
-        <script src="https://hifi-spatial-audio-api.s3.amazonaws.com/releases/latest/HighFidelityAudio-latest.js"></script>
+        <script src="/HighFidelityAudio-6b60dcf.js"></script>
         <script>
             const WORLD_DIMENSION_M = 100; // World will be a cubic area where all sides are of this size
             const PROVIDED_USERNAME = '<%- providedUserID %>';
@@ -53,7 +53,7 @@
             let userDataContainer__fromServer = document.querySelector(`.userDataContainer__fromServer`);
 
             let currentPosition = new HighFidelityAudio.Point3D({ "x": 0, "y": 0, "z": 0 });
-            let currentOrientationEuler = new HighFidelityAudio.OrientationEuler3D({ "pitchDegrees": 0, "yawDegrees": 0, "rollDegrees": 0 });
+            let currentOrientation = new HighFidelityAudio.Quaternion;
 
             let ourHashedVisitID = document.querySelector(`.ourHashedVisitID`);
             let ourPositionContainer = document.querySelector(`.ourPositionContainer`);
@@ -134,19 +134,22 @@
                                 }
                             }
 
-                            if (currentDataFromServer.orientationEuler) {
-                                if (!currentPeers[currentPeerItr].orientationEuler) {
-                                    currentPeers[currentPeerItr].orientationEuler = new HighFidelityAudio.OrientationEuler3D();
+                            if (currentDataFromServer.orientation) {
+                                if (!currentPeers[currentPeerItr].orientation) {
+                                    currentPeers[currentPeerItr].orientation = new HighFidelityAudio.Quaternion();
                                 }
 
-                                if (typeof (currentDataFromServer.orientationEuler.pitchDegrees) === "number") {
-                                    currentPeers[currentPeerItr].orientationEuler.pitchDegrees = currentDataFromServer.orientationEuler.pitchDegrees;
+                                if (typeof (currentDataFromServer.orientation.w) === "number") {
+                                    currentPeers[currentPeerItr].orientation.w = currentDataFromServer.orientation.w;
                                 }
-                                if (typeof (currentDataFromServer.orientationEuler.yawDegrees) === "number") {
-                                    currentPeers[currentPeerItr].orientationEuler.yawDegrees = currentDataFromServer.orientationEuler.yawDegrees;
+                                if (typeof (currentDataFromServer.orientation.x) === "number") {
+                                    currentPeers[currentPeerItr].orientation.x = currentDataFromServer.orientation.x;
                                 }
-                                if (typeof (currentDataFromServer.orientationEuler.rollDegrees) === "number") {
-                                    currentPeers[currentPeerItr].orientationEuler.rollDegrees = currentDataFromServer.orientationEuler.rollDegrees;
+                                if (typeof (currentDataFromServer.orientation.y) === "number") {
+                                    currentPeers[currentPeerItr].orientation.y = currentDataFromServer.orientation.y;
+                                }
+                                if (typeof (currentDataFromServer.orientation.z) === "number") {
+                                    currentPeers[currentPeerItr].orientation.z = currentDataFromServer.orientation.z;
                                 }
                             }
 
@@ -177,7 +180,7 @@
 
                 let initialHiFiAudioAPIData = new HighFidelityAudio.HiFiAudioAPIData({
                     position: currentPosition,
-                    orientationEuler: currentOrientationEuler,
+                    orientation: currentOrientation,
                 });
 
                 hifiCommunicator = new HighFidelityAudio.HiFiCommunicator({
@@ -202,7 +205,7 @@
                 let newUserDataSubscription = new HighFidelityAudio.UserDataSubscription({
                     "components": [
                         HighFidelityAudio.AvailableUserDataSubscriptionComponents.Position,
-                        HighFidelityAudio.AvailableUserDataSubscriptionComponents.OrientationEuler,
+                        HighFidelityAudio.AvailableUserDataSubscriptionComponents.Orientation,
                         HighFidelityAudio.AvailableUserDataSubscriptionComponents.VolumeDecibels
                     ],
                     "callback": (incomingPeers) => {
@@ -229,7 +232,7 @@
             }
 
             function updateOrientationContainer() {
-                ourOrientationContainer.innerHTML = `Orientation: ${currentOrientationEuler ? JSON.stringify(currentOrientationEuler) : "&#60;unknown&#62;"}`;
+                ourOrientationContainer.innerHTML = `Orientation: ${currentOrientation ? JSON.stringify(currentOrientation) : "&#60;unknown&#62;"}`;
             }
 
             function updateAndTransmit() {
@@ -279,7 +282,7 @@
 
                 console.log(hifiCommunicator.updateUserDataAndTransmit({
                     position: currentPosition,
-                    orientationEuler: currentOrientationEuler,
+                    orientation: currentOrientation,
                 }));
             }
         

@@ -142,7 +142,7 @@
         </div>
     </div>
 
-    <script src="https://hifi-spatial-audio-api.s3.amazonaws.com/releases/latest/HighFidelityAudio-latest.js"></script>
+    <script src="/HighFidelityAudio-6b60dcf.js"></script>
     <script>
         // Region map JSON
         let REGION_INFO = {};
@@ -187,7 +187,7 @@
             acceleration: new HighFidelityAudio.Point3D({ "x": 0, "y": 0, "z": 0 }) // m/s^2
         };
         // Orientation determines the direction that the client hears audio sources from
-        let currentOrientationEuler = new HighFidelityAudio.OrientationEuler3D({ "pitchDegrees": 0, "yawDegrees": 270, "rollDegrees": 0 });
+        let currentOrientation = HighFidelityAudio.Quaternion.fromEulerAngles({ yawDegrees: 270 });
 
         // Session state and event listener
         let outputAudioEl = document.querySelector(`.outputAudioEl`);
@@ -409,7 +409,7 @@
 
             let initialHiFiAudioAPIData = new HighFidelityAudio.HiFiAudioAPIData({
                 position: PHYSICS_STATE.position,
-                orientationEuler: currentOrientationEuler,
+                orientation: currentOrientation,
             });
 
             hifiCommunicator = new HighFidelityAudio.HiFiCommunicator({
@@ -479,7 +479,7 @@
 
             console.log(hifiCommunicator.updateUserDataAndTransmit({
                 position: PHYSICS_STATE.position,
-                orientationEuler: currentOrientationEuler,
+                orientation: currentOrientation,
             }));
         }
 

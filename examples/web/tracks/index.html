@@ -130,7 +130,7 @@
                 super(config);
                 // Create the API's position and orientation objects that will be sent to the mixer
                 this.mixerPosition = new HighFidelityAudio.Point3D({ x: -this.position.x, y: this.position.z, z: -this.position.y });
-                this.mixerOrientation = new HighFidelityAudio.OrientationEuler3D({ "pitchDegrees": 0, "yawDegrees": -RADIANS_TO_DEGREES * this.orientation, "rollDegrees": 0 });
+                this.mixerOrientation = HighFidelityAudio.Quaternion.fromEulerAngles({ "pitchDegrees": 0, "yawDegrees": -RADIANS_TO_DEGREES * this.orientation, "rollDegrees": 0 });
                 this.hifiCommunicator = null; // HighFidelityAudio.HiFiCommunicator
                 this.stream = null; // Input or output stream
                 this.type = SoundNodeType.NODE;
@@ -147,7 +147,7 @@
                 this.mixerPosition.x = -this.position.x;
                 this.mixerPosition.y = this.position.z;
                 this.mixerPosition.z = -this.position.y;
-                this.mixerOrientation.yawDegrees = -RADIANS_TO_DEGREES * this.orientation;
+                this.mixerOrientation = HighFidelityAudio.Quaternion.fromEulerAngles({ "pitchDegrees": 0, "yawDegrees": -RADIANS_TO_DEGREES * this.orientation, "rollDegrees": 0 });
                 this.sendUpdatedData();
             }
             // Send the converted position and orientation to the mixer
@@ -155,7 +155,7 @@
                 if (this.hifiCommunicator) {
                     let response = this.hifiCommunicator.updateUserDataAndTransmit({
                         position: this.mixerPosition,
-                        orientationEuler: this.mixerOrientation
+                        orientation: this.mixerOrientation
                     });
                 }
             }
@@ -175,7 +175,7 @@
                 this.hifiCommunicator = new HighFidelityAudio.HiFiCommunicator({
                     initialHiFiAudioAPIData: new HighFidelityAudio.HiFiAudioAPIData({
                         position: this.mixerPosition,
-                        orientationEuler: this.mixerOrientation
+                        orientation: this.mixerOrientation
                     }),
                     onConnectionStateChanged: this.onConnectionStateChanged.bind(this), // Subscribe to connection changes
                 });

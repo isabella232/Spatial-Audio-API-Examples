@@ -275,7 +275,7 @@
                 // Create the API's position and orientation objects that will be sent to the mixer
                 this.mixerPosition = new HighFidelityAudio.Point3D({ x: -this.position.x, y: 0.0, z: -this.position.y });
                 // Send a valid angle
-                this.mixerOrientation = new HighFidelityAudio.OrientationEuler3D({ "pitchDegrees": 0, "yawDegrees": -RADIANS_TO_DEGREES * this.orientation, "rollDegrees": 0 });
+                this.mixerOrientation = HighFidelityAudio.Quaternion.fromEulerAngles({ "pitchDegrees": 0, "yawDegrees": -RADIANS_TO_DEGREES * this.orientation, "rollDegrees": 0 });
                 this.hifiCommunicator = null; // HighFidelityAudio.HiFiCommunicator
                 this.stream = null; // Input or output stream
                 this.type = SoundNodeType.NODE;
@@ -294,7 +294,7 @@
                 this.mixerPosition.z = -this.position.y;
                 let orientation = -RADIANS_TO_DEGREES * this.orientation;
                 orientation %= 360;
-                this.mixerOrientation.yawDegrees = orientation;
+                this.mixerOrientation = HighFidelityAudio.Quaternion.fromEulerAngles({ "pitchDegrees": 0, "yawDegrees": orientation, "rollDegrees": 0 });
                 this.sendUpdatedData();
             }
             // Send the converted position and orientation to the mixer
@@ -302,7 +302,7 @@
                 if (this.hifiCommunicator) {
                     let response = this.hifiCommunicator.updateUserDataAndTransmit({
                         position: this.mixerPosition,
-                        orientationEuler: this.mixerOrientation
+                        orientation: this.mixerOrientation
                     });
                 }
             }
@@ -312,8 +312,9 @@
                 if (data.position !== null) {
                     this.position.set(-data.position.x, -data.position.z);
                 }
-                if (data.orientationEuler !== null) {
-                    this.orientation = -data.orientationEuler.yawDegrees / RADIANS_TO_DEGREES;
+                if (data.orientation !== null) {
+                    let euler = (new HighFidelityAudio.Quaternion(data.orientation)).getEulerAngles();
+                    this.orientation = -euler.yawDegrees / RADIANS_TO_DEGREES;
                 }
             }
             // Notify connection changes for debugging
@@ -327,7 +328,7 @@
                 this.hifiCommunicator = new HighFidelityAudio.HiFiCommunicator({
                     initialHiFiAudioAPIData: new HighFidelityAudio.HiFiAudioAPIData({
                         position: this.mixerPosition,
-                        orientationEuler: this.mixerOrientation
+                        orientation: this.mixerOrientation
                     }),
                     onConnectionStateChanged: this.onConnectionStateChanged.bind(this), // Subscribe to connection changes
                 });
@@ -382,7 +383,7 @@
                     let userDataSubscription = new HighFidelityAudio.UserDataSubscription({
                         "components": [ HighFidelityAudio.AvailableUserDataSubscriptionComponents.VolumeDecibels,
                                         HighFidelityAudio.AvailableUserDataSubscriptionComponents.Position,
-                                        HighFidelityAudio.AvailableUserDataSubscriptionComponents.OrientationEuler  ],
+                                        HighFidelityAudio.AvailableUserDataSubscriptionComponents.Orientation  ],
                         "callback": (data) => { this.onDataReceived(data); }
                     });
                     this.hifiCommunicator.addUserDataSubscription(userDataSubscription);
@@ -429,7 +430,7 @@
                 }
                 let newData = { 
                     position: null, 
-                    orientationEuler: data.orientationEuler, 
+                    orientation: data.orientation, 
                     volumeDecibels: data.volumeDecibels
                 }
                 super.updateReceivedData(newData);
