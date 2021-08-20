@@ -1,11 +1,11 @@
-import { OrientationEuler3D, Point3D } from "hifi-spatial-audio";
+import { Point3D, Quaternion } from "hifi-spatial-audio";
 import { userDataController, connectionController, roomController, physicsController, pathsController, uiController, twoDimensionalRenderer, webSocketConnectionController, watchPartyController, howlerController, uiThemeController, accessibilityController } from "..";
 import { VideoStreamingStates } from "../../../shared/shared";
 import { Path, Waypoint } from "../ai/PathsController";
 import { AVATAR, PHYSICS, UI } from "../constants/constants";
 import { chairSounds } from "../sounds/LocalSoundsController";
 import { SpatialAudioSeat, SpatialStandupRoom, SpatialStandupRoomType } from "../ui/RoomController";
-import { DataToTransmitToHiFi, EasingFunctions, Utilities } from "../utilities/Utilities";
+import { OrientationEuler3D, DataToTransmitToHiFi, EasingFunctions, Utilities } from "../utilities/Utilities";
 
 declare var HIFI_SPACE_NAME: string;
 declare var HIFI_PROVIDED_USER_ID: string;
@@ -240,10 +240,10 @@ class MyAvatar {
             howlerController.updateHowlerOrientation(myUserData.orientationEulerCurrent);
             myUserData.orientationEulerTarget = undefined;
 
-            dataToTransmit.orientationEuler = myUserData.orientationEulerCurrent;
+            dataToTransmit.orientationQuat = Quaternion.fromEulerAngles(myUserData.orientationEulerCurrent);
         }
 
-        let isFirstMoveInNewSession = dataToTransmit.position || dataToTransmit.orientationEuler;
+        let isFirstMoveInNewSession = dataToTransmit.position || dataToTransmit.orientationQuat;
 
         if (isFirstMoveInNewSession) {
             let hifiCommunicator = connectionController.hifiCommunicator;

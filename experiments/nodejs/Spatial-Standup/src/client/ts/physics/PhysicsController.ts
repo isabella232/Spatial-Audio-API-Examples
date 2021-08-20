@@ -1,8 +1,9 @@
-import { OrientationEuler3D, Point3D } from "hifi-spatial-audio";
+import { Point3D, Quaternion } from "hifi-spatial-audio";
+import { Vector3 } from "hifi-spatial-audio/dist/utilities/HiFiMath";
 import { connectionController, howlerController, particleController, pathsController, roomController, uiController, userDataController, userInputController } from "..";
 import { PHYSICS, UI, ROOM, CONTROLS, TIME } from "../constants/constants";
 import { SpatialStandupRoom } from "../ui/RoomController";
-import { Utilities, DataToTransmitToHiFi, EasingFunctions } from "../utilities/Utilities";
+import { OrientationEuler3D, Utilities, DataToTransmitToHiFi, EasingFunctions } from "../utilities/Utilities";
 
 export class PhysicsController {
     normalModeCanvas: HTMLCanvasElement;
@@ -109,7 +110,7 @@ export class PhysicsController {
                 
                 if (isMine) {
                     dataToTransmit.position = userData.positionCurrent;
-                    dataToTransmit.orientationEuler = userData.orientationEulerCurrent;
+                    dataToTransmit.orientationQuat = Quaternion.fromEulerAngles(userData.orientationEulerCurrent);
                     mustTransmit = true;
                 }
             } else if (userData.motionStartTimestamp) {
@@ -194,7 +195,7 @@ export class PhysicsController {
                     Object.assign(userData.orientationEulerCurrent, newOrientationEuler);
 
                     if (isMine) {
-                        dataToTransmit.orientationEuler = userData.orientationEulerCurrent;
+                        dataToTransmit.orientationQuat = Quaternion.fromEulerAngles(userData.orientationEulerCurrent);
                         mustTransmit = true;
                     }
                 }
@@ -209,11 +210,11 @@ export class PhysicsController {
                 let myVelocity = userDataController.myAvatar.linearVelocityMPerS;
                 if (myVelocity.x || myVelocity.z) {
                     userDataController.myAvatar.clearCurrentSeat();
-                    let newWorldPositionM = {
+                    let newWorldPositionM = new Vector3({
                         x: 0,
                         y: userDataController.myAvatar.myUserData.positionCurrent.y,
                         z: 0
-                    };
+                    });
                     newWorldPositionM.x = userDataController.myAvatar.myUserData.positionCurrent.x + (myVelocity.x * deltaTimestampMS / TIME.MS_PER_SEC);
                     newWorldPositionM.z = userDataController.myAvatar.myUserData.positionCurrent.z + (myVelocity.z * deltaTimestampMS / TIME.MS_PER_SEC);
                     userData.positionCurrent = newWorldPositionM;
@@ -226,7 +227,7 @@ export class PhysicsController {
                 if (myRotationalVelocity && userDataController.myAvatar.myUserData.orientationEulerCurrent) {
                     let newYawOrientationDegrees = userDataController.myAvatar.myUserData.orientationEulerCurrent.yawDegrees + myRotationalVelocity * deltaTimestampMS / TIME.MS_PER_SEC;
                     userDataController.myAvatar.myUserData.orientationEulerCurrent.yawDegrees = newYawOrientationDegrees;
-                    dataToTransmit.orientationEuler = userData.orientationEulerCurrent;
+                    dataToTransmit.orientationQuat = Quaternion.fromEulerAngles(userData.orientationEulerCurrent);
                     mustTransmit = true;
                 }
             }
@@ -234,7 +235,7 @@ export class PhysicsController {
             if (isMine && mustTransmit) {
                 hifiCommunicator.updateUserDataAndTransmit(dataToTransmit);
 
-                if (dataToTransmit.orientationEuler) {
+                if (dataToTransmit.orientationQuat) {
                     howlerController.updateHowlerOrientation(userData.orientationEulerCurrent);
                 }
 

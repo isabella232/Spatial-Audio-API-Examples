@@ -1,9 +1,56 @@
-import { Point3D, OrientationEuler3D } from "hifi-spatial-audio";
+import { Point3D, Quaternion } from "hifi-spatial-audio";
 import { physicsController, twoDimensionalRenderer, uiController } from "..";
+
+function sanitizeAngleDegrees(v: number): number {
+    // in the case v is Infinity or Nan,  let's special case
+    if (isNaN(v) || v === Infinity) {
+        return 0.0;
+    } else if (v === -Infinity) {
+        return -0.0;
+    } else {
+        // bring the value in the range ]-360, 360[
+        // if v is < 0 then it will cycle in ]-360, 0]
+        // if v is > 0 then it will cycle in [0, 360[
+        return v % 360.0;
+    }
+}
+
+export class OrientationEuler3D {
+    /**
+     * Consider an aircraft: "Pitch" is defined as "nose up/down about the axis running from wing to wing".
+     * **Negative pitch** means that the aircraft moves its nose **closer to the ground**.
+     * **Positive pitch** means that the aircraft moves its nose **away from the ground**.
+     * Units here are degrees.
+     */
+    pitchDegrees: number;
+    /**
+     * Consider an aircraft: "Yaw" is defined as "nose left/right about the axis running up and down".
+     * **Negative yaw** means that the aircraft will rotate **clockwise** when viewing the aircraft from above.
+     * **Positive yaw** means that the aircraft will rotate **counter-clockwise** when viewing the aircraft from above.
+     * Units here are degrees.
+     */
+    yawDegrees: number;
+    /**
+     * Consider an aircraft: "Roll" is defined as "rotation about the axis running from nose to tail".
+     * **Positive roll** means that the aircraft's **right wing will move closer to the ground**.
+     * **Negative roll** means that the aircraft's **left wing will move closer to the ground**.
+     * Units here are degrees.
+     */
+    rollDegrees: number;
+
+    /**
+     * Construct a new `OrientationEuler3D` object. All parameters are optional. Unset parameters will be set to `0`. Remember, all units for member variables are `degrees`.
+     */
+    constructor({ pitchDegrees = 0, yawDegrees = 0, rollDegrees = 0 }: { pitchDegrees?: number, yawDegrees?: number, rollDegrees?: number } = {}) {
+        this.pitchDegrees = sanitizeAngleDegrees(pitchDegrees);
+        this.yawDegrees = sanitizeAngleDegrees(yawDegrees);
+        this.rollDegrees = sanitizeAngleDegrees(rollDegrees);
+    }
+}
 
 export interface DataToTransmitToHiFi {
     position?: Point3D;
-    orientationEuler?: OrientationEuler3D;
+    orientationQuat?: Quaternion;
 }
 
 export interface CanvasPX {

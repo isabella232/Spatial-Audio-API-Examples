@@ -1,9 +1,9 @@
 import { accessibilityController, appConfigController, avDevicesController, connectionController, editorModeController, landmarksController, howlerController, pathsController, physicsController, roomController, signalsController, twoDimensionalRenderer, uiController, uiThemeController, userDataController, watchPartyController, webSocketConnectionController } from "..";
 import { AVATAR, ROOM, CONTROLS, PHYSICS, PARTICLES, UI } from "../constants/constants";
 import { UserData } from "../userData/UserDataController";
-import { Utilities } from "../utilities/Utilities";
+import { OrientationEuler3D, Utilities } from "../utilities/Utilities";
 import { SpatialStandupRoom, SpatialStandupRoomType, SpatialAudioSeat } from "../ui/RoomController";
-import { OrientationEuler3D, Point3D } from "hifi-spatial-audio";
+import { Point3D, Quaternion } from "hifi-spatial-audio";
 import { Landmark } from "./LandmarksController";
 import { VideoStreamingStates } from "../../../shared/shared";
 
@@ -721,7 +721,9 @@ export class UserInputController {
                     userDataController.myAvatar.myUserData.orientationEulerCurrent.yawDegrees = newYawDegrees % 360;
                     let hifiCommunicator = connectionController.hifiCommunicator;
                     if (hifiCommunicator) {
-                        hifiCommunicator.updateUserDataAndTransmit({ orientationEuler: new OrientationEuler3D({ yawDegrees: newYawDegrees }) });
+                        hifiCommunicator.updateUserDataAndTransmit({
+                            orientation: Quaternion.fromEulerAngles({ yawDegrees: newYawDegrees })
+                        });
                     }
                     howlerController.updateHowlerOrientation(userDataController.myAvatar.myUserData.orientationEulerCurrent);
                 }

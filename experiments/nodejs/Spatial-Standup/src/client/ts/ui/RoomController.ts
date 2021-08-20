@@ -1,8 +1,8 @@
-import { OrientationEuler3D, Point3D } from "hifi-spatial-audio";
+import { Point3D } from "hifi-spatial-audio";
 import { appConfigController, connectionController, roomController, uiController, uiThemeController, userDataController, webSocketConnectionController } from "..";
 import { AVATAR, ROOM, MISC } from "../constants/constants";
 import { UserData } from "../userData/UserDataController";
-import { Utilities } from "../utilities/Utilities";
+import { OrientationEuler3D, Utilities } from "../utilities/Utilities";
 
 export class SpatialAudioSeat {
     room: SpatialStandupRoom;

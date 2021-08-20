@@ -2,9 +2,9 @@ import '../../css/watchParty.scss';
 import { connectionController, howlerController, roomController, uiController, userDataController, userInputController, videoController, webSocketConnectionController } from "..";
 import { SpatialStandupRoom } from "./RoomController";
 import { MyAvatarModes, UserData } from "../userData/UserDataController";
-import { Utilities } from '../utilities/Utilities';
+import { OrientationEuler3D, Utilities } from '../utilities/Utilities';
 import { AVATAR, UI } from '../constants/constants';
-import { OrientationEuler3D } from 'hifi-spatial-audio';
+import { Quaternion } from 'hifi-spatial-audio';
 
 declare var HIFI_SPACE_NAME: string;
 declare var YT: any;
@@ -266,7 +266,9 @@ export class WatchPartyController {
         userDataController.myAvatar.myUserData.orientationEulerCurrent.yawDegrees = lockedYawDegrees;
         let hifiCommunicator = connectionController.hifiCommunicator;
         if (hifiCommunicator) {
-            hifiCommunicator.updateUserDataAndTransmit({ orientationEuler: new OrientationEuler3D({ yawDegrees: lockedYawDegrees }) });
+            hifiCommunicator.updateUserDataAndTransmit({
+                orientation: Quaternion.fromEulerAngles({ yawDegrees: lockedYawDegrees })
+            });
         }
         howlerController.updateHowlerOrientation(userDataController.myAvatar.myUserData.orientationEulerCurrent);
     }

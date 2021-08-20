@@ -1,7 +1,7 @@
-import { OrientationEuler3D, Point3D } from 'hifi-spatial-audio';
+import { Point3D } from 'hifi-spatial-audio';
 import { Howl, Howler } from 'howler';
 import { userDataController, webSocketConnectionController } from '..';
-import { Utilities } from '../utilities/Utilities';
+import { OrientationEuler3D, Utilities } from '../utilities/Utilities';
 import chair01 from '../../audio/chair01.wav';
 import chair02 from '../../audio/chair02.wav';
 import chair03 from '../../audio/chair03.wav';
