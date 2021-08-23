@@ -212,7 +212,7 @@
                 HiFiAudioJWT = searchParams.get("jwt");
             }
             let stackURLOverride = searchParams.get("stack");
-                await hifiCommunicator.connectToHiFiAudioAPIServer(HiFiAudioJWT, stackURLOverride);
+            await hifiCommunicator.connectToHiFiAudioAPIServer(HiFiAudioJWT, stackURLOverride);
         } catch (e) {
             console.error(`Error connecting to High Fidelity:\n${JSON.stringify(e)}`);
             connectButton.disabled = false;
