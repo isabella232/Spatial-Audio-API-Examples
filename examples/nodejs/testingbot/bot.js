@@ -40,7 +40,7 @@ class Bot {
         this.initializeSource();
         let initialAudioData = new HiFiAudioAPIData({
             position: initialPosition,
-            orientation: Quaternion.fromEulerEngles({pitch: pitchDegrees, yaw: yawDegrees, roll: rollDegrees})
+            orientation: Quaternion.fromEulerAngles({pitch: pitchDegrees, yaw: yawDegrees, roll: rollDegrees})
         });
         this.communicator = new HiFiCommunicator({
             transmitRateLimitTimeoutMS: transmitRateLimitTimeoutMS,

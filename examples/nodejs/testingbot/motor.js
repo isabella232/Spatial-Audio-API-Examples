@@ -44,7 +44,7 @@ class Motor {
         normal = {x:0, y: 1, z:0};
         let yawDegrees = degreesBetween({x:0, y:0, z:-1}, direction, normal);
 
-        quaternion = new Quaternion.fromEulerAngles({ yawDegrees, pitchDegrees });
+        quaternion = Quaternion.fromEulerAngles({ yawDegrees, pitchDegrees });
 
         // Bots are always "upright" wrt roll.
 

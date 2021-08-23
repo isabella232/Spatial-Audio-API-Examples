@@ -694,7 +694,7 @@
             // Custom rendering method for bots 
             renderNode(ctx, position, zoom) {
                 // Compute volume ratio
-                let volumeRatio = ((this.volume ? this.volume : -120.0) + 120.0) / 120.0;
+                let volumeRatio = (Math.max((this.volume ? this.volume : -120.0), -120.0) + 120.0) / 120.0;
                 let radius = (this.radius / zoom);
                 // Render a semi-transparent circular area for the bot's visor 
                 CanvasHelper.renderCircle(ctx, 0, 0, 0.95 * radius, 0, 2.0 * Math.PI, "#00000015");
