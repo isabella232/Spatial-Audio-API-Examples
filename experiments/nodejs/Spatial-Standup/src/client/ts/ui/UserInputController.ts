@@ -73,10 +73,6 @@ export class UserInputController {
         
         document.addEventListener('keydown', this.onDocumentKeyDown.bind(this), false);
         document.addEventListener('keyup', this.onDocumentKeyUp.bind(this), false);
-        
-        if (!localStorage.getItem("toggleEnvironmentalSoundsEnabled")) {
-            localStorage.setItem("toggleEnvironmentalSoundsEnabled", "true");
-        }
     }
 
     shouldIgnoreKeyDown(event: KeyboardEvent) {
@@ -473,9 +469,10 @@ export class UserInputController {
                     toggleEnvironmentalSoundsCheckbox.id = "toggleEnvironmentalSoundsCheckbox";
                     toggleEnvironmentalSoundsCheckbox.classList.add("toggleEnvironmentalSoundsCheckbox");
                     toggleEnvironmentalSoundsCheckbox.type = "checkbox";
-                    toggleEnvironmentalSoundsCheckbox.checked = localStorage.getItem("toggleEnvironmentalSoundsEnabled") === "true";
+                    toggleEnvironmentalSoundsCheckbox.checked = !!howlerController.toggleEnvironmentalSoundsEnabled;
                     toggleEnvironmentalSoundsCheckbox.addEventListener("click", (e) => {
                         localStorage.setItem("toggleEnvironmentalSoundsEnabled", toggleEnvironmentalSoundsCheckbox.checked ? "true" : "false");
+                        howlerController.toggleEnvironmentalSoundsEnabled = toggleEnvironmentalSoundsCheckbox.checked;
                     });
             
                     toggleEnvironmentalSoundsSwitchLabel.appendChild(toggleEnvironmentalSoundsCheckbox);

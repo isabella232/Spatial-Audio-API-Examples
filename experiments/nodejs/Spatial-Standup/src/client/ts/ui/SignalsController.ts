@@ -73,6 +73,7 @@ export class SignalsController {
     activeSignalButton: HTMLButtonElement;
     normalModeCanvas: HTMLCanvasElement;
     signalButtonContainer: HTMLDivElement;
+    emitEmojiSounds: boolean;
     toggleSoundsCheckbox: HTMLInputElement;
     activeSignal: Signal;
     supportedSignals: Map<string, Signal>;
@@ -292,12 +293,15 @@ export class SignalsController {
         this.toggleSoundsCheckbox.id = "toggleSoundsCheckbox";
         this.toggleSoundsCheckbox.classList.add("toggleSoundsCheckbox");
         this.toggleSoundsCheckbox.type = "checkbox";
-        if (!localStorage.getItem("toggleSoundsEnabled")) {
-            localStorage.setItem("toggleSoundsEnabled", "true");
+
+        if (!localStorage.getItem("emitEmojiSounds")) {
+            localStorage.setItem("emitEmojiSounds", "true");
         }
-        this.toggleSoundsCheckbox.checked = localStorage.getItem("toggleSoundsEnabled") === "true";
+        this.emitEmojiSounds = localStorage.getItem("emitEmojiSounds") === "true";
+        this.toggleSoundsCheckbox.checked = this.emitEmojiSounds;
         this.toggleSoundsCheckbox.addEventListener("click", (e) => {
-            localStorage.setItem("toggleSoundsEnabled", this.toggleSoundsCheckbox.checked ? "true" : "false");
+            localStorage.setItem("emitEmojiSounds", this.toggleSoundsCheckbox.checked ? "true" : "false");
+            this.emitEmojiSounds = this.toggleSoundsCheckbox.checked;
         });
 
         toggleSoundsSwitchLabel.appendChild(this.toggleSoundsCheckbox);
@@ -429,11 +433,11 @@ export class SignalsController {
         let localSignalParams = this.supportedSignals.get(params.name);
 
         if (localSignalParams.numParticles > 1) {
-            let particleAccount = 0;
+            let particleCount = 0;
             localSignalParams.particleInterval = setInterval(() => {
-                particleAccount++;
+                particleCount++;
     
-                if (particleAccount >= localSignalParams.numParticles) {
+                if (particleCount >= localSignalParams.numParticles) {
                     clearInterval(localSignalParams.particleInterval);
                     localSignalParams.particleInterval = null;
                     return;
@@ -501,7 +505,7 @@ export class SignalsController {
             "parentAvatarVisitIDHash": userDataController.myAvatar.myUserData.visitIDHash,
             "currentRelativeOrWorldPositionM": signal.currentRelativeOrWorldPositionM,
             "targetRelativeOrWorldPositionM": signal.targetRelativeOrWorldPositionM,
-            "emitsSound": this.toggleSoundsCheckbox.checked
+            "emitsSound": this.emitEmojiSounds
         };
 
         this.addSignal(signalParams, true);

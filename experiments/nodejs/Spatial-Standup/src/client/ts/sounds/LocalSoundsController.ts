@@ -13,6 +13,7 @@ export interface SoundParams {
     src: string;
     positionM: Point3D;
     randomSoundRate: boolean;
+    tag: string;
 }
 
 export class LocalSoundsController {
@@ -55,6 +56,7 @@ export class LocalSoundsController {
 
 export class HowlerController {
     latestHowl: Howl;
+    toggleEnvironmentalSoundsEnabled: boolean;
 
     constructor() {
         // We have to call this in order to set up the audio context, because it isn't
@@ -63,6 +65,12 @@ export class HowlerController {
         Howler.pos(0, 0, 0);
         let howlerAngleRadians = 0;
         //Howler.orientation(Math.cos(howlerAngleRadians), 0, Math.sin(howlerAngleRadians), 0, 1, 0);
+        
+        if (!localStorage.getItem("toggleEnvironmentalSoundsEnabled")) {
+            localStorage.setItem("toggleEnvironmentalSoundsEnabled", "true");
+        }
+
+        this.toggleEnvironmentalSoundsEnabled = localStorage.getItem("toggleEnvironmentalSoundsEnabled") === "true";
     }
 
     onMyGlobalPositionChanged(myNewGlobalPosition: Point3D) {
@@ -95,7 +103,7 @@ export class HowlerController {
             return;
         }
 
-        if ((localStorage.getItem("toggleEnvironmentalSoundsEnabled") === "true" && tag === "environment") || tag !== "environment") {
+        if ((this.toggleEnvironmentalSoundsEnabled && tag === "environment") || tag !== "environment") {
             let sound = new Howl({
                 src,
             });
@@ -130,7 +138,8 @@ export class HowlerController {
             let soundParams: SoundParams = {
                 "src": src,
                 "positionM": positionM,
-                "randomSoundRate": randomSoundRate
+                "randomSoundRate": randomSoundRate,
+                "tag": tag,
             };
 
             webSocketConnectionController.socket.emit("addSound", { visitIDHash: userDataController.myAvatar.myUserData.visitIDHash, spaceName: HIFI_SPACE_NAME, soundParams: JSON.stringify(soundParams)} );
