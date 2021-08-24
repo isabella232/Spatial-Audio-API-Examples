@@ -44,7 +44,7 @@
     <body style="width: 100%; height: 100%; margin: 0; padding: 0;">
         <div class = "modalDialogue connectDialogue">
           <div class="centerContent">
-            <button class="connectButton" style="width 20em; height=5em; margin:0;" onClick="start();">Connect</button>
+            <button class="connectButton" style="width:20em; height:5em; margin:0;" onClick="start();">Connect</button>
           </div>
         </div>
         <div class = "gameScreen" style="width:100%; height:100%">
@@ -319,10 +319,14 @@
                 hifiCommunicator.setInputAudioMediaStream(audioMediaStream).then(() => {
 
                     // Connect to the HiFi Audio API server!
-                    // Supply your own JWT here.
-                    const HIFI_AUDIO_JWT = "";
-
-                    hifiCommunicator.connectToHiFiAudioAPIServer(HIFI_AUDIO_JWT).
+                    // Supply your own JWT here, or use a "jwt" query parameter.
+                    let HiFiAudioJWT;
+                    let searchParams = new URLSearchParams(location.search);
+                    if (!HiFiAudioJWT && searchParams.get("jwt")) {
+                        HiFiAudioJWT = searchParams.get("jwt");
+                    }
+                    let stackURLOverride = searchParams.get("stack");
+                    hifiCommunicator.connectToHiFiAudioAPIServer(HiFiAudioJWT, stackURLOverride).         
                     catch (e => {
                         console.error(`Error connecting to High Fidelity:\n${e}`);
                         statusDisplay.innerHTML = 'Connection error. Retry?';
