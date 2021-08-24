@@ -12,7 +12,7 @@
   "dependencies": {
     "audio-decode": "^1.4.0",
     "audio-format": "^2.3.2",
-    "hifi-spatial-audio": "file:../../../../../hifi-spatial-audio-js",
+    "hifi-spatial-audio": "file:../../../../hifi-spatial-audio-2.0.0-0.tgz",
     "pcm-convert": "^1.6.5",
     "wrtc": "^0.4.7",
     "yargs": "^16.2.0"
