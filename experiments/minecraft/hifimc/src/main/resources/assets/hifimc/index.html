@@ -24,7 +24,7 @@
             }
             let initialHiFiAudioAPIData = new HighFidelityAudio.HiFiAudioAPIData({
                 position: new HighFidelityAudio.Point3D({ "x": 0, "y": 0, "z": 0 }),
-                orientation: new HighFidelityAudio.Quaternion({ "pitch": 0, "yaw": 0, "roll": 0 })
+                orientation: new HighFidelityAudio.Quaternion()
             });
             let hifiCommunicator = new HighFidelityAudio.HiFiCommunicator({
                 transmitRateLimitTimeoutMS: 10,
