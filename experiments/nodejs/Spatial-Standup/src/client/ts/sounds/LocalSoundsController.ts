@@ -13,6 +13,7 @@ export interface SoundParams {
     src: string;
     positionM: Point3D;
     randomSoundRate: boolean;
+    tag: string;
 }
 
 export class LocalSoundsController {
@@ -32,7 +33,7 @@ export class LocalSoundsController {
         this.localAudioElToUse = this.localAudio2;
     }
 
-    playSound({src, volume = 1.0, interrupt = true}: {src: string, volume?: number, interrupt?: boolean}) {
+    playSound({src, volume = 1.0, interrupt = true, tag}: {src: string, volume?: number, interrupt?: boolean, tag?: string}) {
         if (!this.localAudio1 || !this.localAudio2) {
             return;
         }
@@ -55,6 +56,7 @@ export class LocalSoundsController {
 
 export class HowlerController {
     latestHowl: Howl;
+    toggleEnvironmentalSoundsEnabled: boolean;
 
     constructor() {
         // We have to call this in order to set up the audio context, because it isn't
@@ -63,6 +65,12 @@ export class HowlerController {
         Howler.pos(0, 0, 0);
         let howlerAngleRadians = 0;
         //Howler.orientation(Math.cos(howlerAngleRadians), 0, Math.sin(howlerAngleRadians), 0, 1, 0);
+        
+        if (!localStorage.getItem("toggleEnvironmentalSoundsEnabled")) {
+            localStorage.setItem("toggleEnvironmentalSoundsEnabled", "true");
+        }
+
+        this.toggleEnvironmentalSoundsEnabled = localStorage.getItem("toggleEnvironmentalSoundsEnabled") === "true";
     }
 
     onMyGlobalPositionChanged(myNewGlobalPosition: Point3D) {
@@ -90,45 +98,48 @@ export class HowlerController {
         Howler.orientation(Math.cos(rads), Math.sin(rads), 0, 0, 0, 1);
     }
 
-    playSound({src, volume = 1.0, positionM, randomSoundRate = false, localOnly = true}: { src: string, volume?: number, positionM: Point3D, randomSoundRate?: boolean, localOnly?: boolean}) {
+    playSound({src, volume = 1.0, positionM, randomSoundRate = false, localOnly = true, tag}: { src: string, volume?: number, positionM: Point3D, randomSoundRate?: boolean, localOnly?: boolean, tag?: string}) {
         if (!(userDataController.myAvatar.myUserData.positionCurrent && positionM)) {
             return;
         }
 
-        let sound = new Howl({
-            src,
-        });
-
-        this.latestHowl = sound;
-
-        // In Howler space:
-        // +x is east.
-        // +y is north.
-        // +z is up.
-        let originalSoundPosition = {
-            "x": -(userDataController.myAvatar.myUserData.positionCurrent.x - positionM.x),
-            "y": userDataController.myAvatar.myUserData.positionCurrent.z - positionM.z,
-            "z": 0
-        };
-
-        console.log(`In Howler coordinates, playing sound at position relative to listener of\n{x: ${originalSoundPosition.x}, y: ${originalSoundPosition.y}, z: ${originalSoundPosition.z}}`);
-
-        sound.pos(originalSoundPosition.x, originalSoundPosition.y, originalSoundPosition.z);
-        if (randomSoundRate) {
-            sound.rate(Utilities.randomFloatBetween(0.8, 1.5));
+        if ((this.toggleEnvironmentalSoundsEnabled && tag === "environment") || tag !== "environment") {
+            let sound = new Howl({
+                src,
+            });
+    
+            this.latestHowl = sound;
+    
+            // In Howler space:
+            // +x is east.
+            // +y is north.
+            // +z is up.
+            let originalSoundPosition = {
+                "x": -(userDataController.myAvatar.myUserData.positionCurrent.x - positionM.x),
+                "y": userDataController.myAvatar.myUserData.positionCurrent.z - positionM.z,
+                "z": 0
+            };
+    
+            console.log(`Playing Howl \`${src}\` at relative position \`{x: ${originalSoundPosition.x}, y: ${originalSoundPosition.y}, z: ${originalSoundPosition.z}}\``);
+    
+            sound.pos(originalSoundPosition.x, originalSoundPosition.y, originalSoundPosition.z);
+            if (randomSoundRate) {
+                sound.rate(Utilities.randomFloatBetween(0.8, 1.5));
+            }
+            sound.volume(volume);
+    
+            sound.play();
+            
+            let rads = this.getHowlerYawAngleRadians(userDataController.myAvatar.myUserData.orientationEulerCurrent.yawDegrees);
+            Howler.orientation(Math.cos(rads), Math.sin(rads), 0, 0, 0, 1);
         }
-        sound.volume(volume);
-
-        sound.play();
-        
-        let rads = this.getHowlerYawAngleRadians(userDataController.myAvatar.myUserData.orientationEulerCurrent.yawDegrees);
-        Howler.orientation(Math.cos(rads), Math.sin(rads), 0, 0, 0, 1);
 
         if (!localOnly && webSocketConnectionController) {
             let soundParams: SoundParams = {
                 "src": src,
                 "positionM": positionM,
-                "randomSoundRate": randomSoundRate
+                "randomSoundRate": randomSoundRate,
+                "tag": tag,
             };
 
             webSocketConnectionController.socket.emit("addSound", { visitIDHash: userDataController.myAvatar.myUserData.visitIDHash, spaceName: HIFI_SPACE_NAME, soundParams: JSON.stringify(soundParams)} );

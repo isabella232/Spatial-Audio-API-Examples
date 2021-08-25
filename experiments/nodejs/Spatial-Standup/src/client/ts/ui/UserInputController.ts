@@ -14,7 +14,6 @@ export class UserInputController {
     normalModeCanvasKeyboardEventCache: Array<KeyboardEvent> = [];
     wasMutedBeforePTT: boolean = false;
     toggleInputMuteButton: HTMLButtonElement;
-    toggleOutputMuteButton: HTMLButtonElement;
     toggleVideoButton: HTMLButtonElement;
     toggleScreenShareButton: HTMLButtonElement;
     toggleSettingsButton: HTMLButtonElement;
@@ -31,10 +30,6 @@ export class UserInputController {
         this.toggleInputMuteButton = document.querySelector('.toggleInputMuteButton');
         this.toggleInputMuteButton.addEventListener("click", (e) => { this.toggleInputMute(); });
         this.toggleInputMuteButton.addEventListener("contextmenu", (e) => { this.toggleShowSettingsMenu(); e.preventDefault(); }, false);
-
-        this.toggleOutputMuteButton = document.querySelector('.toggleOutputMuteButton');
-        this.toggleOutputMuteButton.addEventListener("click", (e) => { this.toggleOutputMute(); });
-        this.toggleOutputMuteButton.addEventListener("contextmenu", (e) => { this.toggleShowSettingsMenu(); e.preventDefault(); }, false);
 
         this.toggleVideoButton = document.querySelector('.toggleVideoButton');
         this.toggleVideoButton.addEventListener("contextmenu", (e) => { this.toggleShowSettingsMenu(); e.preventDefault(); }, false);
@@ -131,6 +126,8 @@ export class UserInputController {
                 if (this.documentKeyboardEventCache[0].ctrlKey) {
                     this.documentKeyboardEventCache[0].preventDefault();
                     editorModeController.toggleEditorMode();
+                } else {
+                    signalsController.toggleSignalContainerVisibility();
                 }
                 break;
             case CONTROLS.M_KEY_CODE:
@@ -152,12 +149,6 @@ export class UserInputController {
                 physicsController.smoothZoomStartTimestamp = undefined;
                 physicsController.pxPerMTarget = (physicsController.pxPerMTarget || physicsController.pxPerMCurrent) + PHYSICS.PX_PER_M_STEP;
                 break;
-            case CONTROLS.DIGIT1_KEY_CODE:
-                signalsController.toggleActiveSignal(signalsController.supportedSignals.get("positive"));
-                break;
-            case CONTROLS.DIGIT2_KEY_CODE:
-                signalsController.toggleActiveSignal(signalsController.supportedSignals.get("negative"));
-                break;
             case CONTROLS.SLASH_KEY_CODE:
                 uiController.showKeyboardShortcutsModal();
                 break;
@@ -168,6 +159,7 @@ export class UserInputController {
                 uiController.hideScreenShareUI();
                 roomController.hideRoomList();
                 uiController.hideKeyboardShortcutsModal();
+                signalsController.hideSignalContainer();
                 this.hideSettingsMenu();
                 break;
         }
@@ -309,6 +301,7 @@ export class UserInputController {
 
     toggleShowSettingsMenu() {
         roomController.hideRoomList();
+        signalsController.hideSignalContainer();
 
         let settingsMenu = document.querySelector(".settingsMenu");
         if (settingsMenu) {
@@ -450,6 +443,43 @@ export class UserInputController {
                         settingsMenu.appendChild(changeVideoDeviceMenu__select);
                     }
 
+                    let settingsMenu__header2 = document.createElement("h1");
+                    settingsMenu__header2.id = "settingsMenu__header";
+                    settingsMenu__header2.setAttribute("aria-label", "Settings");
+                    settingsMenu__header2.classList.add("settingsMenu__h1");
+                    settingsMenu__header2.innerHTML = "Settings";
+                    settingsMenu.appendChild(settingsMenu__header2);
+
+                    let toggleEnvironmentalSoundsContainer = document.createElement("div");
+                    toggleEnvironmentalSoundsContainer.classList.add("toggleEnvironmentalSoundsContainer");
+                    settingsMenu.appendChild(toggleEnvironmentalSoundsContainer);
+            
+                    let toggleEnvironmentalSoundsCheckboxLabel = document.createElement("label");
+                    toggleEnvironmentalSoundsCheckboxLabel.setAttribute("for", "toggleEnvironmentalSoundsCheckbox");
+                    toggleEnvironmentalSoundsCheckboxLabel.classList.add("toggleEnvironmentalSoundsCheckboxLabel");
+                    toggleEnvironmentalSoundsCheckboxLabel.innerHTML = "Environmental Sounds";
+                    toggleEnvironmentalSoundsContainer.appendChild(toggleEnvironmentalSoundsCheckboxLabel);
+            
+                    let toggleEnvironmentalSoundsSwitchLabel = document.createElement("label");
+                    toggleEnvironmentalSoundsSwitchLabel.classList.add("switch");
+                    let toggleEnvironmentalSoundsSwitchSlider = document.createElement("span");
+                    toggleEnvironmentalSoundsSwitchSlider.classList.add("slider");
+            
+                    let toggleEnvironmentalSoundsCheckbox = document.createElement("input");
+                    toggleEnvironmentalSoundsCheckbox.id = "toggleEnvironmentalSoundsCheckbox";
+                    toggleEnvironmentalSoundsCheckbox.classList.add("toggleEnvironmentalSoundsCheckbox");
+                    toggleEnvironmentalSoundsCheckbox.type = "checkbox";
+                    toggleEnvironmentalSoundsCheckbox.checked = !!howlerController.toggleEnvironmentalSoundsEnabled;
+                    toggleEnvironmentalSoundsCheckbox.addEventListener("click", (e) => {
+                        localStorage.setItem("toggleEnvironmentalSoundsEnabled", toggleEnvironmentalSoundsCheckbox.checked ? "true" : "false");
+                        howlerController.toggleEnvironmentalSoundsEnabled = toggleEnvironmentalSoundsCheckbox.checked;
+                    });
+            
+                    toggleEnvironmentalSoundsSwitchLabel.appendChild(toggleEnvironmentalSoundsCheckbox);
+                    toggleEnvironmentalSoundsSwitchLabel.appendChild(toggleEnvironmentalSoundsSwitchSlider);
+            
+                    toggleEnvironmentalSoundsContainer.appendChild(toggleEnvironmentalSoundsSwitchLabel);
+
                     let closeButton = document.createElement("button");
                     closeButton.setAttribute("aria-label", "Close Device Settings");
                     closeButton.classList.add("settingsMenu__closeButton");
@@ -504,41 +534,6 @@ export class UserInputController {
             uiThemeController.refreshThemedElements();
             webSocketConnectionController.updateMyUserDataOnWebSocketServer();
         }
-    }
-
-    toggleOutputMute() {
-        this.setOutputMute(!avDevicesController.outputAudioElement.muted);
-
-        if (avDevicesController.outputAudioElement.muted) {
-            this.toggleOutputMuteButton.setAttribute("aria-label", "Headphones are muted. Click to un-mute your headphones.");
-        } else {
-            this.toggleOutputMuteButton.setAttribute("aria-label", "Headphones are un-muted. Click to mute your headphones.");
-        }
-    }
-
-    setOutputMute(newMuteStatus: boolean) {
-        let allAudioNodes = document.querySelectorAll("audio");
-        allAudioNodes.forEach((audioNode) => {
-            audioNode.muted = !!newMuteStatus;
-        });
-        let allVideoNodes = document.querySelectorAll("video");
-        allVideoNodes.forEach((videoNode) => {
-            videoNode.muted = !!newMuteStatus;
-        });
-        console.log(`Set output mute status to \`${avDevicesController.outputAudioElement.muted}\``);
-
-        if (avDevicesController.outputAudioElement.muted) {
-            this.toggleOutputMuteButton.classList.remove("toggleOutputMuteButton--unmuted");
-            uiThemeController.clearThemesFromElement(<HTMLElement>this.toggleOutputMuteButton, 'toggleOutputMuteButton--unmuted', false);
-            this.toggleOutputMuteButton.classList.add("toggleOutputMuteButton--muted");
-        } else {
-            this.toggleOutputMuteButton.classList.remove("toggleOutputMuteButton--muted");
-            uiThemeController.clearThemesFromElement(<HTMLElement>this.toggleOutputMuteButton, 'toggleOutputMuteButton--muted', false);
-            this.toggleOutputMuteButton.classList.add("toggleOutputMuteButton--unmuted");
-            // We explicitly call `play()` here because certain browsers won't play the newly-set stream automatically.
-            avDevicesController.outputAudioElement.play();
-        }
-        uiThemeController.refreshThemedElements();
     }
 
     setEchoCancellationStatus(newEchoCancellationStatus: boolean) {
@@ -601,18 +596,7 @@ export class UserInputController {
     handleCanvasClick(event: TouchEvent | MouseEvent | PointerEvent) {
         editorModeController.handleCanvasClick(event);
 
-        if (signalsController.activeSignal && (event instanceof MouseEvent || event instanceof PointerEvent)) {
-            let clickM = new Point3D(Utilities.normalModeCanvasPXToM({ x: event.offsetX, y: event.offsetY }));
-
-            let isCloseEnough = false;
-            if (userDataController.myAvatar.myUserData && userDataController.myAvatar.myUserData.positionCurrent) {
-                isCloseEnough = Utilities.getDistanceBetween2DPoints(userDataController.myAvatar.myUserData.positionCurrent.x, userDataController.myAvatar.myUserData.positionCurrent.z, clickM.x, clickM.z) < PARTICLES.CLOSE_ENOUGH_ADD_M;
-            }
-
-            if (isCloseEnough) {
-                signalsController.addActiveSignal(clickM);
-            }
-        } else if (this.highlightedUserData) {
+        if (this.highlightedUserData) {
             uiController.showAvatarContextMenu(this.highlightedUserData);
             this.highlightedUserData = undefined;
         } else if (this.highlightedScreenShareIconUserData) {
@@ -664,6 +648,7 @@ export class UserInputController {
         roomController.hideRoomList();
         uiController.hideAvatarContextMenu();
         uiController.hideKeyboardShortcutsModal();
+        signalsController.hideSignalContainer();
         this.hideSettingsMenu();
 
         let target = <HTMLElement>event.target;

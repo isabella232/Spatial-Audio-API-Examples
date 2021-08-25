@@ -16,6 +16,7 @@ export class VideoController {
     localVideoTrack: Video.LocalVideoTrack;
     providedUserIDToVideoElementMap: Map<string, HTMLVideoElement>;
     videoContainer: HTMLDivElement;
+    screenShareStream: MediaStream;
 
     constructor() {
         this.videoContainer = document.createElement("div");
@@ -33,8 +34,30 @@ export class VideoController {
 
         this.toggleScreenShareButton = document.querySelector('.toggleScreenShareButton');
         if (this.toggleScreenShareButton) {
-            this.toggleScreenShareButton.addEventListener("click", async (e) => {
-                await this.toggleScreenShare();
+            this.toggleScreenShareButton.addEventListener("click", async () => {
+                // We're trying this strange way of getting the `screenShareStream` early in an attempt
+                // to work around a Safari bug where Safari says:
+                // `InvalidAccessError: getDisplayMedia must be called from a user gesture handler.`
+                // when we called `getDisplayMedia()` from within `enableScreenShare()`.
+                if (this.screenShareIsMuted) {
+                    try {
+                        // @ts-ignore
+                        this.screenShareStream = await navigator.mediaDevices.getDisplayMedia();
+                    } catch (e) {
+                        console.warn(`Couldn't get screen for sharing! Error:\n${e}`);
+                        this.maybeDisconnectFromTwilio();
+                        return;
+                    }
+                } else {
+                    if (this.screenShareStream) {
+                        let tracks = this.screenShareStream.getTracks();
+                        tracks.forEach((track) => {
+                            track.stop();
+                        });
+                    }
+                    this.screenShareStream = undefined;
+                }
+                this.toggleScreenShare();
             });
         }
 
@@ -162,7 +185,10 @@ export class VideoController {
         if (this.twilioRoom && this.twilioRoom.localParticipant) {
             this.twilioRoom.localParticipant.unpublishTrack(this.localVideoTrack);
         }
-        this.localVideoTrack.stop();
+        
+        if (this.localVideoTrack) {
+            this.localVideoTrack.stop();
+        }
         
         this.providedUserIDToVideoElementMap.delete(userDataController.myAvatar.myUserData.providedUserID);
 
@@ -248,21 +274,16 @@ export class VideoController {
     async enableScreenShare() {
         console.log("Enabling local screen sharing...");
 
+        if (!this.screenShareStream) {
+            console.error(`\`this.screenShareStream\` is falsey! Cannot enable screen sharing.`);
+            return;
+        }
+
         if (!this.twilioRoom) {
             await this.connectToTwilio();
         }
 
-        let screenShareStream;
-        try {
-            // @ts-ignore
-            screenShareStream = await navigator.mediaDevices.getDisplayMedia();
-        } catch (e) {
-            console.warn(`Couldn't get screen for sharing! Error:\n${e}`);
-            this.maybeDisconnectFromTwilio();
-            return;
-        }
-
-        this.localVideoTrack = new Video.LocalVideoTrack(screenShareStream.getTracks()[0]);
+        this.localVideoTrack = new Video.LocalVideoTrack(this.screenShareStream.getTracks()[0]);
         this.localVideoTrack.on('stopped', () => {
             console.log("User stopped screen sharing.");
             this.disableVideoOrScreenSharing();

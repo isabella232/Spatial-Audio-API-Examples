@@ -1,5 +1,5 @@
 import '../../css/watchParty.scss';
-import { connectionController, howlerController, roomController, uiController, userDataController, userInputController, videoController, webSocketConnectionController } from "..";
+import { connectionController, howlerController, roomController, signalsController, uiController, userDataController, userInputController, videoController, webSocketConnectionController } from "..";
 import { SpatialStandupRoom } from "./RoomController";
 import { MyAvatarModes, UserData } from "../userData/UserDataController";
 import { OrientationEuler3D, Utilities } from '../utilities/Utilities';
@@ -177,6 +177,7 @@ export class WatchPartyController {
         uiController.hideAvatarContextMenu();
         uiController.hideKeyboardShortcutsModal();
         userInputController.hideSettingsMenu();
+        signalsController.hideSignalContainer();
 
         let target = <HTMLElement>event.target;
 

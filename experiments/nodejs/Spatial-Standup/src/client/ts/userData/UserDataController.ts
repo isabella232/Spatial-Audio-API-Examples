@@ -41,8 +41,11 @@ export interface UserData {
     hiFiGainSliderValue?: string;
     volumeThreshold?: number;
     isAudioInputMuted?: boolean;
+    echoCancellationAvailable?: boolean;
     echoCancellationEnabled?: boolean;
+    agcAvailable?: boolean;
     agcEnabled?: boolean;
+    noiseSuppressionAvailable?: boolean;
     noiseSuppressionEnabled?: boolean;
     stereoInput?: boolean;
     currentWatchPartyRoomName?: string;
@@ -69,6 +72,13 @@ class MyAvatar {
     rotationalVelocityDegreesPerS: number = 0;
 
     constructor() {
+        let getSupportedConstraintsSupported = typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined";
+
+        let supportedConstraints;
+        if (getSupportedConstraintsSupported) {
+            supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
+        }
+
         this.myUserData = {
             visitIDHash: undefined,
             providedUserID: HIFI_PROVIDED_USER_ID,
@@ -92,8 +102,11 @@ class MyAvatar {
             hiFiGain: 1.0,
             hiFiGainSliderValue: "21",
             isAudioInputMuted: false,
+            echoCancellationAvailable: supportedConstraints.echoCancellation ? !!supportedConstraints.echoCancellation.valueOf() : false,
             echoCancellationEnabled: false,
+            agcAvailable: supportedConstraints.autoGainControl ? !!supportedConstraints.autoGainControl.valueOf() : false,
             agcEnabled: false,
+            noiseSuppressionAvailable: supportedConstraints.noiseSuppression ? !!supportedConstraints.noiseSuppression.valueOf() : false,
             noiseSuppressionEnabled: false,
             stereoInput: false,
             currentWatchPartyRoomName: undefined,
@@ -240,10 +253,10 @@ class MyAvatar {
             howlerController.updateHowlerOrientation(myUserData.orientationEulerCurrent);
             myUserData.orientationEulerTarget = undefined;
 
-            dataToTransmit.orientationQuat = Quaternion.fromEulerAngles(myUserData.orientationEulerCurrent);
+            dataToTransmit.orientationEuler = myUserData.orientationEulerCurrent;
         }
 
-        let isFirstMoveInNewSession = dataToTransmit.position || dataToTransmit.orientationQuat;
+        let isFirstMoveInNewSession = dataToTransmit.position || dataToTransmit.orientationEuler;
 
         if (isFirstMoveInNewSession) {
             let hifiCommunicator = connectionController.hifiCommunicator;
@@ -254,7 +267,7 @@ class MyAvatar {
             }
             physicsController.autoComputePXPerMFromRoom(targetSeat.room);
         } else {
-            howlerController.playSound({ src: chairSounds[Math.floor(Math.random() * chairSounds.length)], randomSoundRate: true, positionM: myUserData.positionCurrent});
+            howlerController.playSound({ src: chairSounds[Math.floor(Math.random() * chairSounds.length)], randomSoundRate: true, positionM: myUserData.positionCurrent, tag: "environment"});
         }
 
         let currentRoom = myUserData.currentRoom;

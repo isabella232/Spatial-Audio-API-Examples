@@ -76,13 +76,10 @@ export class UIThemeController {
         this.addThemedElementFromClassName("body");
         this.addThemedElementFromClassName("loadingScreen--text");
         this.addThemedElementFromClassName("loadingScreen--icon");
-        this.addThemedElementFromClassName("signalButton--active");
         this.addThemedElementFromClassName("watchPartyModeCanvas");
         this.addThemedElementFromClassName("toggleInputMuteButton--unmuted");
         this.addThemedElementFromClassName("toggleInputMuteButton--muted");
         this.addThemedElementFromClassName("toggleInputMuteButton--disabled");
-        this.addThemedElementFromClassName("toggleOutputMuteButton--unmuted");
-        this.addThemedElementFromClassName("toggleOutputMuteButton--muted");
         this.addThemedElementFromClassName("toggleVideoButton--unmuted");
         this.addThemedElementFromClassName("toggleVideoButton--muted");
         this.addThemedElementFromClassName("toggleVideoButton--disabled");
