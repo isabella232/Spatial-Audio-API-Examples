@@ -110,7 +110,7 @@ export class PhysicsController {
                 
                 if (isMine) {
                     dataToTransmit.position = userData.positionCurrent;
-                    dataToTransmit.orientationQuat = Quaternion.fromEulerAngles(userData.orientationEulerCurrent);
+                    dataToTransmit.orientation = Quaternion.fromEulerAngles(userData.orientationEulerCurrent);
                     mustTransmit = true;
                 }
             } else if (userData.motionStartTimestamp) {
@@ -195,7 +195,7 @@ export class PhysicsController {
                     Object.assign(userData.orientationEulerCurrent, newOrientationEuler);
 
                     if (isMine) {
-                        dataToTransmit.orientationQuat = Quaternion.fromEulerAngles(userData.orientationEulerCurrent);
+                        dataToTransmit.orientation = Quaternion.fromEulerAngles(userData.orientationEulerCurrent);
                         mustTransmit = true;
                     }
                 }
@@ -227,7 +227,7 @@ export class PhysicsController {
                 if (myRotationalVelocity && userDataController.myAvatar.myUserData.orientationEulerCurrent) {
                     let newYawOrientationDegrees = userDataController.myAvatar.myUserData.orientationEulerCurrent.yawDegrees + myRotationalVelocity * deltaTimestampMS / TIME.MS_PER_SEC;
                     userDataController.myAvatar.myUserData.orientationEulerCurrent.yawDegrees = newYawOrientationDegrees;
-                    dataToTransmit.orientationQuat = Quaternion.fromEulerAngles(userData.orientationEulerCurrent);
+                    dataToTransmit.orientation = Quaternion.fromEulerAngles(userData.orientationEulerCurrent);
                     mustTransmit = true;
                 }
             }
@@ -235,7 +235,7 @@ export class PhysicsController {
             if (isMine && mustTransmit) {
                 hifiCommunicator.updateUserDataAndTransmit(dataToTransmit);
 
-                if (dataToTransmit.orientationQuat) {
+                if (dataToTransmit.orientation) {
                     howlerController.updateHowlerOrientation(userData.orientationEulerCurrent);
                 }
 

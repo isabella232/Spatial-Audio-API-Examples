@@ -50,7 +50,7 @@ export class OrientationEuler3D {
 
 export interface DataToTransmitToHiFi {
     position?: Point3D;
-    orientationQuat?: Quaternion;
+    orientation?: Quaternion;
 }
 
 export interface CanvasPX {
