@@ -37,6 +37,8 @@ Corresponds to the "Build a Web App with the Spatial Audio API, Express, and EJS
 Corresponds to the "Get a JWT" guide at [highfidelity.com/api/guides/misc/getAJWT](https://www.highfidelity.com/api/guides/misc/getAJWT).
 ### [Webpack](./examples/nodejs/webpack)
 A basic webapp that makes use of the NodeJS version of the Spatial Audio API with Webpack. The functionality of this webapp matches that of the "simple" example above.
+### [Webhook](./examples/nodejs/webhook)
+A webserver that demonstrates how to receive and verify webhook events, which can be used to monitor when users connect and disconnect from any spaces in an app.
 
 # The `experiments` Directory
 🐉 The `experiments` directory of this repository contains experimental example projects that import the High Fidelity Spatial Audio Client Library. These examples may not be documented as thoroughly as the above examples. Enjoy!
