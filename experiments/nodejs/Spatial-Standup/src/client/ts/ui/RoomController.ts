@@ -1,8 +1,8 @@
-import { OrientationEuler3D, Point3D } from "hifi-spatial-audio";
+import { Point3D } from "hifi-spatial-audio";
 import { appConfigController, connectionController, roomController, uiController, uiThemeController, userDataController, webSocketConnectionController } from "..";
 import { AVATAR, ROOM, MISC } from "../constants/constants";
 import { UserData } from "../userData/UserDataController";
-import { Utilities } from "../utilities/Utilities";
+import { OrientationEuler3D, Utilities } from "../utilities/Utilities";
 
 export class SpatialAudioSeat {
     room: SpatialStandupRoom;
@@ -483,10 +483,10 @@ export class RoomController {
                     document.querySelector(`[data-room-name="${userData.currentRoom.name}"]`).prepend(roomInfoContainer__occupant);
                 }
             } else {
-                if (userDataController.myAvatar.myUserData.currentRoom) {
-                    roomInfoContainer__occupant.setAttribute('aria-label', `${userDataController.myAvatar.myUserData.displayName} in ${userDataController.myAvatar.myUserData.currentRoom.name}. Click to view profile.`);
+                if (userData.currentRoom) {
+                    roomInfoContainer__occupant.setAttribute('aria-label', `${userData.displayName} in ${userData.currentRoom.name}. Click to view profile.`);
                 } else {
-                    roomInfoContainer__occupant.setAttribute('aria-label', `${userDataController.myAvatar.myUserData.displayName}. Click to view profile.`);
+                    roomInfoContainer__occupant.setAttribute('aria-label', `${userData.displayName}. Click to view profile.`);
                 }
                 occupantInnerHTML = ``;
                 if (userData.colorHex) {

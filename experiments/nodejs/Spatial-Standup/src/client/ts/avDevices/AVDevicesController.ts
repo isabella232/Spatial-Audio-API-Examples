@@ -4,7 +4,8 @@ import { connectionController, videoController } from "..";
 export class AVDevicesController {
     inputAudioMediaStream: MediaStream;
     outputAudioElement: HTMLAudioElement;
-    audioConstraints: MediaTrackConstraints;
+    outputAudioMuted: boolean = false;
+    audioConstraints: any;
     currentAudioInputDeviceID: string;
     currentAudioOutputDeviceID: string;
     currentVideoDeviceID: string;
@@ -13,13 +14,15 @@ export class AVDevicesController {
         this.audioConstraints = getBestAudioConstraints();
 
         if (typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined") {
-            if (localStorage.getItem("echoCancellation") === "true" && navigator.mediaDevices.getSupportedConstraints().echoCancellation) {
+            let supportedConstraints: any = navigator?.mediaDevices?.getSupportedConstraints();
+
+            if (localStorage.getItem("echoCancellation") === "true" && supportedConstraints.echoCancellation) {
                 this.audioConstraints.echoCancellation = true;
             }
-            if (localStorage.getItem("autoGainControl") === "true" && navigator.mediaDevices.getSupportedConstraints().autoGainControl) {
+            if (localStorage.getItem("autoGainControl") === "true" && supportedConstraints.autoGainControl) {
                 this.audioConstraints.autoGainControl = true;
             }
-            if (localStorage.getItem("noiseSuppression") === "true" && navigator.mediaDevices.getSupportedConstraints().noiseSuppression) {
+            if (localStorage.getItem("noiseSuppression") === "true" && supportedConstraints.noiseSuppression) {
                 this.audioConstraints.noiseSuppression = true;
             }
         }

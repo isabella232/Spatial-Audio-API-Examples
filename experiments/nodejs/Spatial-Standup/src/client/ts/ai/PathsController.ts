@@ -1,6 +1,6 @@
-import { OrientationEuler3D, Point3D } from "hifi-spatial-audio";
+import { Point3D } from "hifi-spatial-audio";
 import { pathsController, userDataController } from "..";
-import { EasingFunctions } from "../utilities/Utilities";
+import { OrientationEuler3D, EasingFunctions } from "../utilities/Utilities";
 
 export class Waypoint {
     positionStart: Point3D;

@@ -493,9 +493,9 @@ app.get('/:spaceName', connectToSpace);
 let httpOrHttpsServer;
 if (isInHTTPSMode) {
     const options = {
-        "key": fs.readFileSync('C:/Users/Zach/AppData/Local/mkcert/localhost+2-key.pem'),
-        "cert": fs.readFileSync('C:/Users/Zach/AppData/Local/mkcert/localhost+2.pem'),
-        "ca": fs.readFileSync('C:/Users/Zach/AppData/Local/mkcert/rootCA.pem')
+        "key": fs.readFileSync('C:/Users/valef/AppData/Local/mkcert/localhost+2-key.pem'),
+        "cert": fs.readFileSync('C:/Users/valef/AppData/Local/mkcert/localhost+2.pem'),
+        "ca": fs.readFileSync('C:/Users/valef/AppData/Local/mkcert/rootCA.pem')
     };
     httpOrHttpsServer = require("https").createServer(options, app);
 } else {
@@ -534,8 +534,11 @@ class Participant {
     colorHex: string;
     profileImageURL: string;
     isAudioInputMuted: boolean;
+    echoCancellationAvailable: boolean;
     echoCancellationEnabled: boolean;
+    agcAvailable: boolean;
     agcEnabled: boolean;
+    noiseSuppressionAvailable: boolean;
     noiseSuppressionEnabled: boolean;
     hiFiGainSliderValue: string;
     volumeThreshold: number;
@@ -553,8 +556,11 @@ class Participant {
         colorHex,
         profileImageURL,
         isAudioInputMuted,
+        echoCancellationAvailable,
         echoCancellationEnabled,
+        agcAvailable,
         agcEnabled,
+        noiseSuppressionAvailable,
         noiseSuppressionEnabled,
         hiFiGainSliderValue,
         volumeThreshold,
@@ -571,8 +577,11 @@ class Participant {
         colorHex: string,
         profileImageURL: string,
         isAudioInputMuted: boolean,
+        echoCancellationAvailable: boolean,
         echoCancellationEnabled: boolean,
+        agcAvailable: boolean,
         agcEnabled: boolean,
+        noiseSuppressionAvailable: boolean,
         noiseSuppressionEnabled: boolean,
         hiFiGainSliderValue: string,
         volumeThreshold: number,
@@ -589,8 +598,11 @@ class Participant {
         this.colorHex = colorHex;
         this.profileImageURL = profileImageURL;
         this.isAudioInputMuted = isAudioInputMuted;
+        this.echoCancellationAvailable = echoCancellationAvailable;
         this.echoCancellationEnabled = echoCancellationEnabled;
+        this.agcAvailable = agcAvailable;
         this.agcEnabled = agcEnabled;
+        this.noiseSuppressionAvailable = noiseSuppressionAvailable;
         this.noiseSuppressionEnabled = noiseSuppressionEnabled;
         this.hiFiGainSliderValue = hiFiGainSliderValue;
         this.volumeThreshold = volumeThreshold;
@@ -664,8 +676,11 @@ socketIOServer.on("connection", (socket: any) => {
         colorHex,
         profileImageURL,
         isAudioInputMuted,
+        echoCancellationAvailable,
         echoCancellationEnabled,
+        agcAvailable,
         agcEnabled,
+        noiseSuppressionAvailable,
         noiseSuppressionEnabled,
         hiFiGainSliderValue,
         volumeThreshold,
@@ -681,8 +696,11 @@ socketIOServer.on("connection", (socket: any) => {
         colorHex: string,
         profileImageURL: string,
         isAudioInputMuted: boolean,
+        echoCancellationAvailable: boolean,
         echoCancellationEnabled: boolean,
+        agcAvailable: boolean,
         agcEnabled: boolean,
+        noiseSuppressionAvailable: boolean,
         noiseSuppressionEnabled: boolean,
         hiFiGainSliderValue: string,
         volumeThreshold: number,
@@ -709,8 +727,11 @@ socketIOServer.on("connection", (socket: any) => {
             colorHex,
             profileImageURL,
             isAudioInputMuted,
+            echoCancellationAvailable,
             echoCancellationEnabled,
+            agcAvailable,
             agcEnabled,
+            noiseSuppressionAvailable,
             noiseSuppressionEnabled,
             hiFiGainSliderValue,
             volumeThreshold,
@@ -736,8 +757,11 @@ socketIOServer.on("connection", (socket: any) => {
         colorHex,
         profileImageURL,
         isAudioInputMuted,
+        echoCancellationAvailable,
         echoCancellationEnabled,
+        agcAvailable,
         agcEnabled,
+        noiseSuppressionAvailable,
         noiseSuppressionEnabled,
         hiFiGainSliderValue,
         volumeThreshold,
@@ -751,8 +775,11 @@ socketIOServer.on("connection", (socket: any) => {
         colorHex: string,
         profileImageURL: string,
         isAudioInputMuted: boolean,
+        echoCancellationAvailable: boolean,
         echoCancellationEnabled: boolean,
+        agcAvailable: boolean,
         agcEnabled: boolean,
+        noiseSuppressionAvailable: boolean,
         noiseSuppressionEnabled: boolean,
         hiFiGainSliderValue: string,
         volumeThreshold: number,
@@ -779,11 +806,20 @@ socketIOServer.on("connection", (socket: any) => {
             if (typeof (isAudioInputMuted) === "boolean") {
                 participantToEdit.isAudioInputMuted = isAudioInputMuted;
             }
+            if (typeof (echoCancellationAvailable) === "boolean") {
+                participantToEdit.echoCancellationAvailable = echoCancellationAvailable;
+            }
             if (typeof (echoCancellationEnabled) === "boolean") {
                 participantToEdit.echoCancellationEnabled = echoCancellationEnabled;
             }
+            if (typeof (agcAvailable) === "boolean") {
+                participantToEdit.agcAvailable = agcAvailable;
+            }
             if (typeof (agcEnabled) === "boolean") {
                 participantToEdit.agcEnabled = agcEnabled;
+            }
+            if (typeof (noiseSuppressionAvailable) === "boolean") {
+                participantToEdit.noiseSuppressionAvailable = noiseSuppressionAvailable;
             }
             if (typeof (noiseSuppressionEnabled) === "boolean") {
                 participantToEdit.noiseSuppressionEnabled = noiseSuppressionEnabled;

@@ -1,18 +1,23 @@
 import { Point3D } from "hifi-spatial-audio";
 import { PARTICLES } from "../constants/constants";
-import { Utilities } from "../utilities/Utilities";
+import { EasingFunctions, Utilities } from "../utilities/Utilities";
 
 export class Particle {
     uuid: string;
-    currentWorldPositionM: Point3D;
+    parentAvatarVisitIDHash?: string;
+    currentRelativeOrWorldPositionM: Point3D;
     velocityMPerSec: Point3D;
     easing: (t: number) => number;
     dimensionsM: Point3D;
+    dimensionsMStart: Point3D;
+    dimensionsMEnd: Point3D;
     image: HTMLImageElement;
     createdAt: number;
     lifespanMS: number;
     opacity: number;
-    targetWorldPositionM: Point3D;
+    opacityStart: number;
+    opacityEnd: number;
+    targetRelativeOrWorldPositionM?: Point3D;
     startWorldPositionM: Point3D;
     linearVelocityWithTarget?: number;
     easeTimeStartMS: number;
@@ -22,41 +27,52 @@ export class Particle {
     msAfterTargetReachedToDelete: number;
 
     constructor({
-        currentWorldPositionM = new Point3D(),
+        parentAvatarVisitIDHash,
+        currentRelativeOrWorldPositionM = new Point3D(),
         velocityMPerSec = new Point3D(),
-        easing = PARTICLES.EASING.LINEAR,
+        easing = EasingFunctions.easeLinear,
         dimensionsM = new Point3D(),
+        dimensionsMEnd,
         imageSRC,
         lifespanMS = -1,
         opacity = 1.0,
-        targetWorldPositionM,
+        opacityEnd = opacity,
+        targetRelativeOrWorldPositionM,
         linearVelocityWithTarget = PARTICLES.DEFAULT_LINEAR_VELOCITY_M_PER_SEC,
         msAfterTargetReachedToDelete,
     }: {
-        currentWorldPositionM?: Point3D,
+        parentAvatarVisitIDHash?: string,
+        currentRelativeOrWorldPositionM?: Point3D,
         velocityMPerSec?: Point3D,
         easing?: (t: number) => number,
         dimensionsM?: Point3D,
+        dimensionsMEnd?: Point3D,
         imageSRC: string,
         lifespanMS?: number,
         opacity?: number,
-        targetWorldPositionM?: Point3D,
+        opacityEnd?: number,
+        targetRelativeOrWorldPositionM?: Point3D,
         linearVelocityWithTarget?: number,
         msAfterTargetReachedToDelete?: number
     }) {
         this.uuid = Utilities.generateUUID();
-        this.currentWorldPositionM = currentWorldPositionM;
+        this.parentAvatarVisitIDHash = parentAvatarVisitIDHash;
+        this.currentRelativeOrWorldPositionM = currentRelativeOrWorldPositionM;
         this.velocityMPerSec = velocityMPerSec;
         this.easing = easing;
         this.dimensionsM = dimensionsM;
+        this.dimensionsMStart = dimensionsM;
+        this.dimensionsMEnd = dimensionsMEnd;
         this.image = new Image();
         this.image.src = imageSRC;
         this.createdAt = performance.now();
         this.lifespanMS = lifespanMS;
         this.opacity = opacity;
+        this.opacityStart = opacity + 5; // `+5` term to make the full-opacity emoji last a bit longer
+        this.opacityEnd = opacityEnd;
 
-        // The parameters below are used when `targetWorldPositionM` is set.
-        this.targetWorldPositionM = targetWorldPositionM;
+        // The parameters below are used when `targetRelativeOrWorldPositionM` is set.
+        this.targetRelativeOrWorldPositionM = targetRelativeOrWorldPositionM;
         this.startWorldPositionM = new Point3D({ "x": undefined, "z": undefined });
         this.linearVelocityWithTarget = linearVelocityWithTarget;
         this.easeTimeStartMS = undefined;
@@ -64,6 +80,10 @@ export class Particle {
         this.easeTimeEndMS = undefined;
         this.targetMotionTimer = undefined;
         this.msAfterTargetReachedToDelete = msAfterTargetReachedToDelete;
+
+        if (msAfterTargetReachedToDelete !== undefined && targetRelativeOrWorldPositionM === undefined) {
+            this.lifespanMS = msAfterTargetReachedToDelete;
+        }
     }
 }
 
@@ -94,12 +114,10 @@ export class ParticleController {
     }
 
     updateAllParticles(timestamp: number, deltaTimestampMS: number) {
-        let now = performance.now();
-
         for (let i = 0; i < this.activeParticles.length; i++) {
             let particle = this.activeParticles[i];
 
-            if (particle.lifespanMS > -1 && (particle.createdAt + particle.lifespanMS < now)) {
+            if (particle.lifespanMS > -1 && (timestamp - particle.createdAt > particle.lifespanMS)) {
                 this.deleteParticle(particle.uuid);
                 i--;
                 continue;
@@ -111,13 +129,13 @@ export class ParticleController {
             });
             let maxLinearVelocity = PARTICLES.MAX_LINEAR_VELOCITY_M_PER_SEC;
             let distanceToTargetM;
-            if (particle.targetWorldPositionM.x && particle.targetWorldPositionM.z) {
+            if (particle.targetRelativeOrWorldPositionM && particle.targetRelativeOrWorldPositionM.x !== undefined && particle.targetRelativeOrWorldPositionM.z !== undefined) {
                 let distanceToTargetMDelta = {
-                    x: particle.targetWorldPositionM.x - particle.currentWorldPositionM.x,
-                    z: particle.targetWorldPositionM.z - particle.currentWorldPositionM.z
+                    x: particle.targetRelativeOrWorldPositionM.x - particle.currentRelativeOrWorldPositionM.x,
+                    z: particle.targetRelativeOrWorldPositionM.z - particle.currentRelativeOrWorldPositionM.z
                 };
-                let deltaX = particle.targetWorldPositionM.x ? distanceToTargetMDelta.x : 0.0;
-                let deltaZ = particle.targetWorldPositionM.z ? distanceToTargetMDelta.z : 0.0;
+                let deltaX = particle.targetRelativeOrWorldPositionM.x ? distanceToTargetMDelta.x : 0.0;
+                let deltaZ = particle.targetRelativeOrWorldPositionM.z ? distanceToTargetMDelta.z : 0.0;
                 distanceToTargetM = Math.sqrt(Math.pow(distanceToTargetMDelta.x, 2) + Math.pow(distanceToTargetMDelta.z, 2));
                 // Normalize deltas 
                 newXZVelocity.x = particle.linearVelocityWithTarget * (deltaX / distanceToTargetM);
@@ -144,19 +162,19 @@ export class ParticleController {
             Object.assign(particle.velocityMPerSec, newXZVelocity);
             velocityMagnitudeMperSec = Math.sqrt(Math.pow(particle.velocityMPerSec.x, 2) + Math.pow(particle.velocityMPerSec.z, 2));
 
-            if (particle.targetWorldPositionM && !particle.targetMotionTimer) {
-                Object.assign(particle.startWorldPositionM, particle.currentWorldPositionM);
-                particle.easeTimeStartMS = now;
+            if (particle.targetRelativeOrWorldPositionM && !particle.targetMotionTimer) {
+                Object.assign(particle.startWorldPositionM, particle.currentRelativeOrWorldPositionM);
+                particle.easeTimeStartMS = timestamp;
                 particle.easeDurationMS = Math.round(distanceToTargetM / velocityMagnitudeMperSec * 1000);
                 particle.easeTimeEndMS = particle.easeTimeStartMS + particle.easeDurationMS;
                 particle.targetMotionTimer = setTimeout(() => {
                     particle.easeTimeStartMS = undefined;
                     particle.easeDurationMS = undefined;
-                    particle.currentWorldPositionM = new Point3D({
-                        "x": particle.targetWorldPositionM.x,
-                        "z": particle.targetWorldPositionM.z,
+                    particle.currentRelativeOrWorldPositionM = new Point3D({
+                        "x": particle.targetRelativeOrWorldPositionM.x,
+                        "z": particle.targetRelativeOrWorldPositionM.z,
                     });
-                    particle.targetWorldPositionM = new Point3D({
+                    particle.targetRelativeOrWorldPositionM = new Point3D({
                         "x": undefined,
                         "z": undefined,
                     });
@@ -172,8 +190,17 @@ export class ParticleController {
             }
 
             if (particle.velocityMPerSec.x || particle.velocityMPerSec.z) {
-                particle.currentWorldPositionM.x = Utilities.linearScale(particle.easing((now - particle.easeTimeStartMS) / particle.easeDurationMS), 0, 1, particle.startWorldPositionM.x, particle.targetWorldPositionM.x);
-                particle.currentWorldPositionM.z = Utilities.linearScale(particle.easing((now - particle.easeTimeStartMS) / particle.easeDurationMS), 0, 1, particle.startWorldPositionM.z, particle.targetWorldPositionM.z);
+                particle.currentRelativeOrWorldPositionM.x = Utilities.linearScale(particle.easing((timestamp - particle.easeTimeStartMS) / particle.easeDurationMS), 0, 1, particle.startWorldPositionM.x, particle.targetRelativeOrWorldPositionM.x);
+                particle.currentRelativeOrWorldPositionM.z = Utilities.linearScale(particle.easing((timestamp - particle.easeTimeStartMS) / particle.easeDurationMS), 0, 1, particle.startWorldPositionM.z, particle.targetRelativeOrWorldPositionM.z);
+            }
+
+            if (particle.opacityStart !== particle.opacityEnd) {
+                particle.opacity = Utilities.linearScale(particle.easing((timestamp - particle.createdAt) / particle.lifespanMS), 0, 1, particle.opacityStart, particle.opacityEnd);
+            }
+
+            if (particle.dimensionsMEnd) {
+                particle.dimensionsM.x = Utilities.linearScale(EasingFunctions.easeLinear((timestamp - particle.createdAt) / particle.lifespanMS), 0, 1, particle.dimensionsMStart.x, particle.dimensionsMEnd.x);
+                particle.dimensionsM.z = Utilities.linearScale(EasingFunctions.easeLinear((timestamp - particle.createdAt) / particle.lifespanMS), 0, 1, particle.dimensionsMStart.z, particle.dimensionsMEnd.z);
             }
         }
     }

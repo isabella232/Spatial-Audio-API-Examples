@@ -5,6 +5,7 @@ import Room1 from "../../../server/static/rooms/Room1.jpg";
 import Room2 from "../../../server/static/rooms/Room2.jpg";
 import SeatingRadius1Image2 from "../../../server/static/rooms/room-with-seating-radius-1-bg-2.jpg";
 import { Landmark } from "../ui/LandmarksController";
+import { Vector3 } from "hifi-spatial-audio/dist/utilities/HiFiMath";
 declare var HIFI_SPACE_NAME: string;
 declare var APP_MODE: string;
 declare var APP_CONFIG_URL: string;
@@ -92,9 +93,9 @@ export class AppConfigController {
         this.rooms.push(new SpatialStandupRoom({
             "name": "Small Room",
             "altText": "A top-down view of a small meeting room.",
-            "roomCenter": { "x": -4.3, "y": 0, "z": -1.055 },
-            "seatingCenter": {"x": -4.397745090149535, "y": 0, "z": -1.0481428664107273},
-            "dimensions": {"x": 6.59, "y": 0, "z": 7.19 },
+            "roomCenter": new Vector3({ "x": -4.3, "y": 0, "z": -1.055 }),
+            "seatingCenter": new Vector3({"x": -4.397745090149535, "y": 0, "z": -1.0481428664107273}),
+            "dimensions": new Vector3({"x": 6.59, "y": 0, "z": 7.19 }),
             "numSeatsInRoom": 12,
             "seatingRadiusM": 1.2,
             "roomImageSRC": Room1
@@ -102,9 +103,9 @@ export class AppConfigController {
         this.rooms.push(new SpatialStandupRoom({
             "name": "Large Room",
             "altText": "A top-down view of a large meeting room.",
-            "roomCenter": { "x": 3.30, "y": 0, "z": 0 },
-            "seatingCenter": {"x": 3.51459649122807, "y": 0, "z": 0.10519298245614023},
-            "dimensions": {"x": 8.64, "y": 0, "z": 9.304 },
+            "roomCenter": new Vector3({ "x": 3.30, "y": 0, "z": 0 }),
+            "seatingCenter": new Vector3({"x": 3.51459649122807, "y": 0, "z": 0.10519298245614023}),
+            "dimensions": new Vector3({"x": 8.64, "y": 0, "z": 9.304 }),
             "numSeatsInRoom": 20,
             "seatingRadiusM": 2.0,
             "roomImageSRC": Room2

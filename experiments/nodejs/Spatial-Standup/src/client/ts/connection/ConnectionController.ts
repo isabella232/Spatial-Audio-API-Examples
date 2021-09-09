@@ -1,6 +1,6 @@
-import { HiFiCommunicator, HiFiLogger, HiFiLogLevel, getBestAudioConstraints, HiFiUserDataStreamingScopes, ReceivedHiFiAudioAPIData, UserDataSubscription, AvailableUserDataSubscriptionComponents, OrientationEuler3D, Point3D } from 'hifi-spatial-audio';
+import { HiFiCommunicator, HiFiLogger, HiFiLogLevel, getBestAudioConstraints, HiFiUserDataStreamingScopes, ReceivedHiFiAudioAPIData, UserDataSubscription, AvailableUserDataSubscriptionComponents, Point3D, Quaternion } from 'hifi-spatial-audio';
 import { avDevicesController, howlerController, localSoundsController, roomController, uiController, userDataController, videoController, webSocketConnectionController } from '..';
-import { Utilities } from '../utilities/Utilities';
+import { OrientationEuler3D, Utilities } from '../utilities/Utilities';
 import YouConnected from '../../audio/youConnected.wav';
 import SomeoneElseConnected from '../../audio/someoneElseConnected.wav';
 import SomeoneElseDisconnected from '../../audio/someoneElseDisconnected.wav';
@@ -71,7 +71,7 @@ export class ConnectionController {
                 console.warn(`Browser did not give us the requested audio input device.`);
             }
 
-            let inputAudioMediaStreamTrackConstraints = inputAudioMediaStreamTrack.getConstraints();
+            let inputAudioMediaStreamTrackConstraints: any = inputAudioMediaStreamTrack.getConstraints();
             if (!inputAudioMediaStreamTrackConstraints) {
                 console.warn(`Couldn't get input audio media stream track constraints! The UI may show different results versus what the user hears.`);
             } else {
@@ -172,7 +172,7 @@ export class ConnectionController {
                 // There are other components we could subscribe to here, but we're only subscribing to Volume data updates.
                 "components": [
                     AvailableUserDataSubscriptionComponents.Position,
-                    AvailableUserDataSubscriptionComponents.OrientationEuler,
+                    AvailableUserDataSubscriptionComponents.Orientation,
                     AvailableUserDataSubscriptionComponents.VolumeDecibels
                 ],
                 // See above for the definition of `onNewHiFiUserDataReceived`.
@@ -269,17 +269,31 @@ export class ConnectionController {
                     currentLocalUserData.motionStartTimestamp = undefined;
                 }
                 
-                if (currentDataFromServer.orientationEuler && typeof (currentDataFromServer.orientationEuler.yawDegrees) === "number" && !isMine) {
-                    let targetOrientation = new OrientationEuler3D();
-                    targetOrientation.yawDegrees = currentDataFromServer.orientationEuler.yawDegrees;
-                    targetOrientation.yawDegrees %= 360;
+                if (currentDataFromServer.orientation && !isMine) {
+                    let targetOrientationQuat = new Quaternion();
+                    if (currentDataFromServer.orientation.w !== null) {
+                        targetOrientationQuat.w = currentDataFromServer.orientation.w;
+                    }
+                    if (currentDataFromServer.orientation.x !== null) {
+                        targetOrientationQuat.x = currentDataFromServer.orientation.x;
+                    }
+                    if (currentDataFromServer.orientation.y !== null) {
+                        targetOrientationQuat.y = currentDataFromServer.orientation.y;
+                    }
+                    if (currentDataFromServer.orientation.z !== null) {
+                        targetOrientationQuat.z = currentDataFromServer.orientation.z;
+                    }
+
+                    let targetOrientationEuler = new OrientationEuler3D();
+                    targetOrientationEuler.yawDegrees = targetOrientationQuat.getEulerAngles().yawDegrees;
+                    targetOrientationEuler.yawDegrees %= 360;
 
                     // If this avatar has NOT also moved during the current reception of user data,
                     // slam the orientation to whatever the server has sent to us.
                     if (!currentLocalUserData.orientationEulerCurrent || !thisAvatarMoved) {
                         currentLocalUserData.orientationEulerStart = undefined;
                         currentLocalUserData.orientationEulerCurrent = new OrientationEuler3D();
-                        Object.assign(currentLocalUserData.orientationEulerCurrent, targetOrientation);
+                        Object.assign(currentLocalUserData.orientationEulerCurrent, targetOrientationEuler);
                         currentLocalUserData.orientationEulerTarget = undefined;
                     } else {
                         if (!currentLocalUserData.orientationEulerStart) {
@@ -290,7 +304,7 @@ export class ConnectionController {
                         if (!currentLocalUserData.orientationEulerTarget) {
                             currentLocalUserData.orientationEulerTarget = new OrientationEuler3D();
                         }
-                        Object.assign(currentLocalUserData.orientationEulerTarget, targetOrientation);
+                        Object.assign(currentLocalUserData.orientationEulerTarget, targetOrientationEuler);
                     }
 
                     currentLocalUserData.motionStartTimestamp = undefined;
@@ -304,14 +318,28 @@ export class ConnectionController {
 
                 receivedNewPositionData = true;
 
-                if (currentDataFromServer.orientationEuler) {
-                    currentDataFromServer.orientationEuler.yawDegrees %= 360;
+                let serverOrientationQuat = new Quaternion();
+                if (currentDataFromServer.orientation) {
+                    if (currentDataFromServer.orientation.w !== null) {
+                        serverOrientationQuat.w = currentDataFromServer.orientation.w;
+                    }
+                    if (currentDataFromServer.orientation.x !== null) {
+                        serverOrientationQuat.x = currentDataFromServer.orientation.x;
+                    }
+                    if (currentDataFromServer.orientation.y !== null) {
+                        serverOrientationQuat.y = currentDataFromServer.orientation.y;
+                    }
+                    if (currentDataFromServer.orientation.z !== null) {
+                        serverOrientationQuat.z = currentDataFromServer.orientation.z;
+                    }
                 }
+                let serverOrientationEuler = serverOrientationQuat.getEulerAngles();
+                serverOrientationEuler.yawDegrees %= 360;
 
                 userDataController.allOtherUserData.push({
                     visitIDHash: currentVisitIDHash,
                     positionCurrent: currentDataFromServer.position,
-                    orientationEulerCurrent: currentDataFromServer.orientationEuler,
+                    orientationEulerCurrent: serverOrientationEuler,
                     volumeDecibels: currentDataFromServer.volumeDecibels,
                     userGainForThisConnection: 1.0,
                     tempData: {},

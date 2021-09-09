@@ -15,8 +15,11 @@ interface WebSocketParticipantData {
     colorHex: string;
     profileImageURL: string;
     isAudioInputMuted: boolean;
+    echoCancellationAvailable: boolean;
     echoCancellationEnabled: boolean;
+    agcAvailable: boolean;
     agcEnabled: boolean;
+    noiseSuppressionAvailable: boolean;
     noiseSuppressionEnabled: boolean;
     hiFiGainSliderValue: string;
     volumeThreshold: number;
@@ -52,8 +55,11 @@ export class WebSocketConnectionController {
                     colorHex,
                     profileImageURL,
                     isAudioInputMuted,
+                    echoCancellationAvailable,
                     echoCancellationEnabled,
+                    agcAvailable,
                     agcEnabled,
+                    noiseSuppressionAvailable,
                     noiseSuppressionEnabled,
                     hiFiGainSliderValue,
                     volumeThreshold,
@@ -87,11 +93,20 @@ export class WebSocketConnectionController {
                         }
                         localUserData.isAudioInputMuted = isAudioInputMuted;
                     }
+                    if (typeof (echoCancellationAvailable) === "boolean") {
+                        localUserData.echoCancellationAvailable = echoCancellationAvailable;
+                    }
                     if (typeof (echoCancellationEnabled) === "boolean") {
                         localUserData.echoCancellationEnabled = echoCancellationEnabled;
                     }
+                    if (typeof (agcAvailable) === "boolean") {
+                        localUserData.agcAvailable = agcAvailable;
+                    }
                     if (typeof (agcEnabled) === "boolean") {
                         localUserData.agcEnabled = agcEnabled;
+                    }
+                    if (typeof (noiseSuppressionAvailable) === "boolean") {
+                        localUserData.noiseSuppressionAvailable = noiseSuppressionAvailable;
                     }
                     if (typeof (noiseSuppressionEnabled) === "boolean") {
                         localUserData.noiseSuppressionEnabled = noiseSuppressionEnabled;
@@ -144,7 +159,7 @@ export class WebSocketConnectionController {
                     }
 
                     if (playChairSound) {
-                        howlerController.playSound({ src: chairSounds[Math.floor(Math.random() * chairSounds.length)], randomSoundRate: true, positionM: localUserData.positionCurrent, volume: 0.3 });
+                        howlerController.playSound({ src: chairSounds[Math.floor(Math.random() * chairSounds.length)], randomSoundRate: true, positionM: localUserData.positionCurrent, volume: 0.3, tag: "environment" });
                     }
                     
                     console.log(`Updated participant:\nVisit ID Hash \`${localUserData.visitIDHash}\`:\nDisplay Name: \`${displayName}\`\nColor: ${colorHex}\nprofileImageURL: ${profileImageURL}\nisAudioInputMuted: ${isAudioInputMuted}\nCurrent Seat ID: ${localUserData.currentSeat ? localUserData.currentSeat.seatID : "undefined"}\nCurrent Room Name: ${localUserData.currentRoom ? localUserData.currentRoom.name : "undefined"}\nechoCancellationEnabled: ${localUserData.echoCancellationEnabled}\nagcEnabled: ${localUserData.agcEnabled}\nnsEnabled: ${localUserData.noiseSuppressionEnabled}\nhiFiGainSliderValue: ${localUserData.hiFiGainSliderValue}\nvolumeThreshold:${localUserData.volumeThreshold}\ncurrentWatchPartyRoomName:${localUserData.currentWatchPartyRoomName}\nisStreamingVideo:${localUserData.isStreamingVideo}\n`);
@@ -155,8 +170,11 @@ export class WebSocketConnectionController {
                         colorHex,
                         profileImageURL,
                         isAudioInputMuted,
+                        echoCancellationAvailable,
                         echoCancellationEnabled,
+                        agcAvailable,
                         agcEnabled,
+                        noiseSuppressionAvailable,
                         noiseSuppressionEnabled,
                         hiFiGainSliderValue,
                         volumeThreshold,
@@ -218,7 +236,9 @@ export class WebSocketConnectionController {
 
         this.socket.on("onRequestToEnableAGC", ({ fromVisitIDHash }: { fromVisitIDHash: string }) => {
             console.warn(`Got a request from \`${fromVisitIDHash}\` to enable AGC!`);
-            if (typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().autoGainControl) {
+
+            let supportedConstraints: any = navigator?.mediaDevices?.getSupportedConstraints();
+            if (typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && supportedConstraints.autoGainControl) {
                 avDevicesController.audioConstraints.autoGainControl = true;
                 connectionController.setNewInputAudioMediaStream();
             } else {
@@ -234,8 +254,10 @@ export class WebSocketConnectionController {
 
         this.socket.on("onRequestToEnableNoiseSuppression", ({ fromVisitIDHash }: { fromVisitIDHash: string }) => {
             console.warn(`Got a request from \`${fromVisitIDHash}\` to enable Noise Suppression!`);
+
+            let supportedConstraints: any = navigator?.mediaDevices?.getSupportedConstraints();
             
-            if (typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().noiseSuppression) {
+            if (typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && supportedConstraints.noiseSuppression) {
                 avDevicesController.audioConstraints.noiseSuppression = true;
                 connectionController.setNewInputAudioMediaStream();
             } else {
@@ -307,8 +329,11 @@ export class WebSocketConnectionController {
             colorHex: myUserData.colorHex,
             profileImageURL: myUserData.profileImageURL,
             isAudioInputMuted: myUserData.isAudioInputMuted,
+            echoCancellationAvailable: myUserData.echoCancellationAvailable,
             echoCancellationEnabled: myUserData.echoCancellationEnabled,
+            agcAvailable: myUserData.agcAvailable,
             agcEnabled: myUserData.agcEnabled,
+            noiseSuppressionAvailable: myUserData.noiseSuppressionAvailable,
             noiseSuppressionEnabled: myUserData.noiseSuppressionEnabled,
             hiFiGainSliderValue: myUserData.hiFiGainSliderValue,
             volumeThreshold: myUserData.volumeThreshold,
@@ -332,8 +357,11 @@ export class WebSocketConnectionController {
             colorHex: myUserData.colorHex,
             profileImageURL: myUserData.profileImageURL,
             isAudioInputMuted: myUserData.isAudioInputMuted,
+            echoCancellationAvailable: myUserData.echoCancellationAvailable,
             echoCancellationEnabled: myUserData.echoCancellationEnabled,
+            agcAvailable: myUserData.agcAvailable,
             agcEnabled: myUserData.agcEnabled,
+            noiseSuppressionAvailable: myUserData.noiseSuppressionAvailable,
             noiseSuppressionEnabled: myUserData.noiseSuppressionEnabled,
             hiFiGainSliderValue: myUserData.hiFiGainSliderValue,
             volumeThreshold: myUserData.volumeThreshold,
