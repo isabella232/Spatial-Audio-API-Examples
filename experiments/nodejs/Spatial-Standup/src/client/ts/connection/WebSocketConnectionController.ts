@@ -236,7 +236,9 @@ export class WebSocketConnectionController {
 
         this.socket.on("onRequestToEnableAGC", ({ fromVisitIDHash }: { fromVisitIDHash: string }) => {
             console.warn(`Got a request from \`${fromVisitIDHash}\` to enable AGC!`);
-            if (typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().autoGainControl) {
+
+            let supportedConstraints: any = navigator?.mediaDevices?.getSupportedConstraints();
+            if (typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && supportedConstraints.autoGainControl) {
                 avDevicesController.audioConstraints.autoGainControl = true;
                 connectionController.setNewInputAudioMediaStream();
             } else {
@@ -252,8 +254,10 @@ export class WebSocketConnectionController {
 
         this.socket.on("onRequestToEnableNoiseSuppression", ({ fromVisitIDHash }: { fromVisitIDHash: string }) => {
             console.warn(`Got a request from \`${fromVisitIDHash}\` to enable Noise Suppression!`);
+
+            let supportedConstraints: any = navigator?.mediaDevices?.getSupportedConstraints();
             
-            if (typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().noiseSuppression) {
+            if (typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && supportedConstraints.noiseSuppression) {
                 avDevicesController.audioConstraints.noiseSuppression = true;
                 connectionController.setNewInputAudioMediaStream();
             } else {

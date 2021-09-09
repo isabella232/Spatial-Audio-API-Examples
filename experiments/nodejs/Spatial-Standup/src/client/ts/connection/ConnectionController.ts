@@ -71,7 +71,7 @@ export class ConnectionController {
                 console.warn(`Browser did not give us the requested audio input device.`);
             }
 
-            let inputAudioMediaStreamTrackConstraints = inputAudioMediaStreamTrack.getConstraints();
+            let inputAudioMediaStreamTrackConstraints: any = inputAudioMediaStreamTrack.getConstraints();
             if (!inputAudioMediaStreamTrackConstraints) {
                 console.warn(`Couldn't get input audio media stream track constraints! The UI may show different results versus what the user hears.`);
             } else {

@@ -546,7 +546,8 @@ export class UserInputController {
     }
 
     setAGCStatus(newAGCStatus: boolean) {
-        if (typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().autoGainControl) {
+        let supportedConstraints: any = navigator?.mediaDevices?.getSupportedConstraints();
+        if (typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && supportedConstraints.autoGainControl) {
             avDevicesController.audioConstraints.autoGainControl = newAGCStatus;
             connectionController.setNewInputAudioMediaStream();
         } else {
@@ -555,7 +556,8 @@ export class UserInputController {
     }
 
     setNoiseSuppressionStatus(newNSStatus: boolean) {
-        if (typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().noiseSuppression) {
+        let supportedConstraints: any = navigator?.mediaDevices?.getSupportedConstraints();
+        if (typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && supportedConstraints.noiseSuppression) {
             avDevicesController.audioConstraints.noiseSuppression = newNSStatus;
             connectionController.setNewInputAudioMediaStream();
         } else {

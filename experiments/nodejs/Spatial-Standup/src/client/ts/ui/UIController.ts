@@ -813,7 +813,8 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
     }
 
     generateAGCUI(userData: UserData) {
-        if (typeof (userData.agcEnabled) !== "boolean" || !userData.agcAvailable || (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash && !(typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().autoGainControl))) {
+        let supportedConstraints: any = navigator?.mediaDevices?.getSupportedConstraints();
+        if (typeof (userData.agcEnabled) !== "boolean" || !userData.agcAvailable || (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash && !(typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && supportedConstraints.autoGainControl))) {
             return;
         }
 
@@ -857,7 +858,8 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
     }
 
     generateNoiseSuppressionUI(userData: UserData) {
-        if (typeof (userData.noiseSuppressionEnabled) !== "boolean" || !userData.noiseSuppressionAvailable || (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash && !(typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().noiseSuppression))) {
+        let supportedConstraints: any = navigator?.mediaDevices?.getSupportedConstraints();
+        if (typeof (userData.noiseSuppressionEnabled) !== "boolean" || !userData.noiseSuppressionAvailable || (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash && !(typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && supportedConstraints.noiseSuppression))) {
             return;
         }
 

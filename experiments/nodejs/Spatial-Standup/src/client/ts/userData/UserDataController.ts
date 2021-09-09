@@ -74,7 +74,7 @@ class MyAvatar {
     constructor() {
         let getSupportedConstraintsSupported = typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined";
 
-        let supportedConstraints;
+        let supportedConstraints: any;
         if (getSupportedConstraintsSupported) {
             supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
         }
