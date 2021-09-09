@@ -77,12 +77,6 @@
     <div>
         <button class="connectDisconnectButton"></button>
         <audio controls autoplay class="outputAudioEl"></audio>
-        <ul class="thingsToRemember">
-            <li>`+x` is to the right and `-x` is to the left</li>
-            <li>`+y` is into the screen and `-y` is out of the screen towards the user</li>
-            <li>`+z` is up and `-z` is down</li>
-            <li>The coordinate system is right-handed, so +yaw is counter clockwise.</li>
-        </ul>
     </div>
 
     <div class="userDataContainer userDataContainer__ours">
@@ -122,7 +116,7 @@
             <button onclick="addRoll()">roll + 45°</button>
         </div>
         <div class="smallButtonContainer">
-            <button onclick="sendIdentityQuaternion()">Send Identity Quat</button>
+            <button onclick="resetOrientation()">Reset Orientation</button>
         </div>
 
         <div class="smallButtonContainer">
@@ -143,15 +137,15 @@
     <div class="userDataContainer userDataContainer__fromServer"></div>
 
     <script
-        src="https://hifi-spatial-audio-api.s3-us-west-2.amazonaws.com/releases/latest/HighFidelityAudio-latest.js"></script>
+        src="./HighFidelityAudio-6b60dcf.js"></script>
     <script
-        src="https://hifi-spatial-audio-api.s3-us-west-2.amazonaws.com/releases/latest/HighFidelityControls-latest.js"></script>
+        src="./HighFidelityControls-6b60dcf.js"></script>
     <script>
         let outputAudioEl = document.querySelector(`.outputAudioEl`);
         let userDataContainer__fromServer = document.querySelector(`.userDataContainer__fromServer`);
 
         let currentPosition = new HighFidelityAudio.Point3D({ "x": 0, "y": 0, "z": 0 });
-        let currentOrientationEuler = new HighFidelityAudio.OrientationEuler3D({ "pitchDegrees": 0, "yawDegrees": 0, "rollDegrees": 0 });
+        let currentOrientation = new HighFidelityAudio.Quaternion();
         let currentHiFiGain = 1.0;
 
         let ourHashedVisitID = document.querySelector(`.ourHashedVisitID`);
@@ -210,7 +204,8 @@
                 currentDiv.innerHTML += `<p>Provided User ID: ${allUserDataFromServer[i].providedUserID ? allUserDataFromServer[i].providedUserID : "&#60;unknown&#62;"}</p>`;
                 currentDiv.innerHTML += `<p>Hashed Visit ID: ${allUserDataFromServer[i].hashedVisitID ? allUserDataFromServer[i].hashedVisitID : "&#60;unknown&#62;"}</p>`;
                 currentDiv.innerHTML += `<p>Position: ${allUserDataFromServer[i].position ? JSON.stringify(allUserDataFromServer[i].position) : "&#60;unknown&#62;"}</p>`;
-                currentDiv.innerHTML += `<p>Orientation: ${allUserDataFromServer[i].orientationEuler ? JSON.stringify(allUserDataFromServer[i].orientationEuler) : "&#60;unknown&#62;"}</p>`;
+                currentDiv.innerHTML += `<p>Orientation: ${allUserDataFromServer[i].orientation ? JSON.stringify(allUserDataFromServer[i].orientation) : "&#60;unknown&#62;"}</p>`;
+                currentDiv.innerHTML += `<p>Orientation (Euler): ${allUserDataFromServer[i].orientation ? JSON.stringify(new HighFidelityAudio.Quaternion(allUserDataFromServer[i].orientation).getEulerAngles()) : "&#60;unknown&#62;"}</p>`;
                 currentDiv.innerHTML += `<p>Volume (dB): ${allUserDataFromServer[i].volumeDecibels ? allUserDataFromServer[i].volumeDecibels : "&#60;unknown&#62;"}</p>`;
                 userDataContainer__fromServer.appendChild(currentDiv);
             }
@@ -251,19 +246,22 @@
                             }
                         }
 
-                        if (currentDataFromServer.orientationEuler) {
-                            if (!allUserDataFromServer[allItr].orientationEuler) {
-                                allUserDataFromServer[allItr].orientationEuler = new HighFidelityAudio.OrientationEuler3D();
+                        if (currentDataFromServer.orientation) {
+                            if (!allUserDataFromServer[allItr].orientation) {
+                                allUserDataFromServer[allItr].orientation = new HighFidelityAudio.Quaternion();
                             }
 
-                            if (typeof (currentDataFromServer.orientationEuler.pitchDegrees) === "number") {
-                                allUserDataFromServer[allItr].orientationEuler.pitchDegrees = currentDataFromServer.orientationEuler.pitchDegrees;
+                            if (typeof (currentDataFromServer.orientation.w) === "number") {
+                                allUserDataFromServer[allItr].orientation.w = currentDataFromServer.orientation.w;
                             }
-                            if (typeof (currentDataFromServer.orientationEuler.yawDegrees) === "number") {
-                                allUserDataFromServer[allItr].orientationEuler.yawDegrees = currentDataFromServer.orientationEuler.yawDegrees;
+                            if (typeof (currentDataFromServer.orientation.x) === "number") {
+                                allUserDataFromServer[allItr].orientation.x = currentDataFromServer.orientation.x;
                             }
-                            if (typeof (currentDataFromServer.orientationEuler.rollDegrees) === "number") {
-                                allUserDataFromServer[allItr].orientationEuler.rollDegrees = currentDataFromServer.orientationEuler.rollDegrees;
+                            if (typeof (currentDataFromServer.orientation.y) === "number") {
+                                allUserDataFromServer[allItr].orientation.y = currentDataFromServer.orientation.y;
+                            }
+                            if (typeof (currentDataFromServer.orientation.z) === "number") {
+                                allUserDataFromServer[allItr].orientation.z = currentDataFromServer.orientation.z;
                             }
                         }
 
@@ -290,7 +288,7 @@
 
             let initialHiFiAudioAPIData = new HighFidelityAudio.HiFiAudioAPIData({
                 position: currentPosition,
-                orientationEuler: currentOrientationEuler,
+                orientation: currentOrientation,
                 hiFiGain: currentHiFiGain,
             });
 
@@ -300,13 +298,20 @@
             });
             await hifiCommunicator.setInputAudioMediaStream(inputAudioMediaStream, false);
 
+            let searchParams = new URLSearchParams(location.search);
+
             // Connect to the High Fidelity Audio Spatial API Server by supplying your own JWT here.
             // Follow this guide to get a JWT: https://www.highfidelity.com/api/guides/misc/getAJWT
             // If you don't need a guide, obtain JWT credentials after signing up for a developer account at https://account.highfidelity.com/dev/account
-            const HIFI_AUDIO_JWT = "";
+            let HIFI_AUDIO_JWT = "";
+
+            if (searchParams.has("jwt")) {
+                HIFI_AUDIO_JWT = searchParams.get("jwt");
+            }
+
             let connectResponse;
             try {
-                let stackURLOverride = new URLSearchParams(location.search).get("stack");
+                let stackURLOverride = searchParams.get("stack");
                 connectResponse = await hifiCommunicator.connectToHiFiAudioAPIServer(HIFI_AUDIO_JWT, stackURLOverride);
             } catch (e) {
                 console.error(`Call to \`connectToHiFiAudioAPIServer()\` failed! Error:\n${JSON.stringify(e)}`);
@@ -323,7 +328,7 @@
             let newUserDataSubscription = new HighFidelityAudio.UserDataSubscription({
                 "components": [
                     HighFidelityAudio.AvailableUserDataSubscriptionComponents.Position,
-                    HighFidelityAudio.AvailableUserDataSubscriptionComponents.OrientationEuler,
+                    HighFidelityAudio.AvailableUserDataSubscriptionComponents.Orientation,
                     HighFidelityAudio.AvailableUserDataSubscriptionComponents.VolumeDecibels,
                 ],
                 "callback": (receivedHiFiAudioAPIDataArray) => {
@@ -362,73 +367,68 @@
         }
 
         function updateOrientationContainer() {
-            ourOrientationContainer.innerHTML = `Orientation: ${currentOrientationEuler ? JSON.stringify(currentOrientationEuler) : "&#60;unknown&#62;"}`;
+            ourOrientationContainer.innerHTML = `Orientation: ${currentOrientation ? JSON.stringify(currentOrientation) : "&#60;unknown&#62;"}`;
         }
 
         function updateHiFiGainContainer() {
             ourHiFiGainContainer.innerHTML = `HiFi Gain: ${currentHiFiGain}`;
         }
+        
+
+        function updateAndTransmit() {
+            updateOrientationContainer();
+            updatePositionContainer();
+            transmitHiFiAudioAPIDataToMixer();
+        }
 
         function subtractX() {
             currentPosition.x -= 1;
-            updatePositionContainer();
-            transmitHiFiAudioAPIDataToMixer();
+            updateAndTransmit();
         }
         function addX() {
             currentPosition.x += 1;
-            updatePositionContainer();
-            transmitHiFiAudioAPIDataToMixer();
+            updateAndTransmit();
         }
         function subtractY() {
             currentPosition.y -= 1;
-            updatePositionContainer();
-            transmitHiFiAudioAPIDataToMixer();
+            updateAndTransmit();
         }
         function addY() {
             currentPosition.y += 1;
-            updatePositionContainer();
-            transmitHiFiAudioAPIDataToMixer();
+            updateAndTransmit();
         }
         function subtractZ() {
             currentPosition.z -= 1;
-            updatePositionContainer();
-            transmitHiFiAudioAPIDataToMixer();
+            updateAndTransmit();
         }
         function addZ() {
             currentPosition.z += 1;
-            updatePositionContainer();
-            transmitHiFiAudioAPIDataToMixer();
+            updateAndTransmit();
         }
 
         function subtractPitch() {
-            currentOrientationEuler.pitchDegrees -= 45;
-            updateOrientationContainer();
-            transmitHiFiAudioAPIDataToMixer();
+            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ pitchDegrees: -45 }));
+            updateAndTransmit();
         }
         function addPitch() {
-            currentOrientationEuler.pitchDegrees += 45;
-            updateOrientationContainer();
-            transmitHiFiAudioAPIDataToMixer();
+            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ pitchDegrees: 45 }));
+            updateAndTransmit();
         }
         function subtractYaw() {
-            currentOrientationEuler.yawDegrees -= 45;
-            updateOrientationContainer();
-            transmitHiFiAudioAPIDataToMixer();
+            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ yawDegrees: -45 }));
+            updateAndTransmit();
         }
         function addYaw() {
-            currentOrientationEuler.yawDegrees += 45;
-            updateOrientationContainer();
-            transmitHiFiAudioAPIDataToMixer();
+            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ yawDegrees: 45 }));
+            updateAndTransmit();
         }
         function subtractRoll() {
-            currentOrientationEuler.rollDegrees -= 45;
-            updateOrientationContainer();
-            transmitHiFiAudioAPIDataToMixer();
+            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ rollDegrees: -45 }));
+            updateAndTransmit();
         }
         function addRoll() {
-            currentOrientationEuler.rollDegrees += 45;
-            updateOrientationContainer();
-            transmitHiFiAudioAPIDataToMixer();
+            currentOrientation = HighFidelityAudio.Quaternion.multiply(currentOrientation, HighFidelityAudio.Quaternion.fromEulerAngles({ rollDegrees: 45 }));
+            updateAndTransmit();
         }
 
         function addHiFiGain() {
@@ -450,19 +450,12 @@
             transmitHiFiAudioAPIDataToMixer();
         }
 
-        function sendIdentityQuaternion() {
-            currentOrientationEuler.pitchDegrees = 0;
-            currentOrientationEuler.yawDegrees = 0;
-            currentOrientationEuler.rollDegrees = 0;
+        function resetOrientation() {
+            currentOrientation = new HighFidelityAudio.Quaternion();
 
             updateOrientationContainer();
 
-            if (!hifiCommunicator) {
-                return;
-            }
-            console.log(hifiCommunicator.updateUserDataAndTransmit({
-                orientationQuat: { "w": 1, "x": 0, "y": 0, "z": 0 }
-            }));
+            transmitHiFiAudioAPIDataToMixer();
         }
 
         function resetPosition() {
@@ -491,7 +484,7 @@
 
             console.log(hifiCommunicator.updateUserDataAndTransmit({
                 position: currentPosition,
-                orientationEuler: currentOrientationEuler,
+                orientation: currentOrientation,
                 hiFiGain: currentHiFiGain,
             }));
         }

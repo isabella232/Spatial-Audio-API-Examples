@@ -1,0 +1,15 @@
+{
+  "name": "hifi-sample-webhook-simple",
+  "version": "1.0.0",
+  "description": "An Express web app for testing webhooks for High Fidelity Spatial Audio apps.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Sabrina Shanman",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "jose": "^3.5.4"
+  }
+}

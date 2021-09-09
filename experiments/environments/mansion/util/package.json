@@ -12,7 +12,7 @@
   "author": "Roxanne Skelly",
   "license": "MIT",
   "dependencies": {
-    "hifi-spatial-audio": "^0.2.8",
+    "hifi-spatial-audio": "^2.0.0",
     "node-fetch": "^2.6.1",
     "yargs": "^16.2.0"
   }

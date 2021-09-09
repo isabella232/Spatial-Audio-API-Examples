@@ -57,7 +57,7 @@ class Avatar extends Client {
         const PixelsToMeters = 1/40;
         return new HighFidelityAudio.HiFiAudioAPIData({
             position: new HighFidelityAudio.Point3D({x: x * PixelsToMeters, y:0, z: y * PixelsToMeters}),
-            orientationEuler: new HighFidelityAudio.OrientationEuler3D({pitchDegrees: 0, yawDegrees: 180 - rotation, rollDegrees: 0 })
+            orientation: HighFidelityAudio.Quaternion.fromEulerAngles({ yawDegrees: 180 - rotation })
         });
     }
     setInputAudio(stream, stereo = false) {

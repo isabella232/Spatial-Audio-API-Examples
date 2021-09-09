@@ -6,7 +6,7 @@ const {
 import {
     HiFiAudioAPIData,
     Point3D,
-    OrientationEuler3D,
+    Quaternion,
     HiFiCommunicator,
     HiFiConstants
 } from "hifi-spatial-audio";
@@ -40,7 +40,7 @@ class Bot {
         this.initializeSource();
         let initialAudioData = new HiFiAudioAPIData({
             position: initialPosition,
-            orientationEuler: this.makeEuler({pitchDegrees, yawDegrees, rollDegrees})
+            orientation: Quaternion.fromEulerAngles({pitch: pitchDegrees, yaw: yawDegrees, roll: rollDegrees})
         });
         this.communicator = new HiFiCommunicator({
             transmitRateLimitTimeoutMS: transmitRateLimitTimeoutMS,
@@ -56,13 +56,10 @@ class Bot {
         this.communicator.updateUserDataAndTransmit({position});
         return position;
     }
-    makeEuler(options) {
-        return new OrientationEuler3D(options);
-    }
-    updateOrientation(orientationEuler) {
+    updateOrientation(orientation) {
         if (this.shutdown) return;
-        orientationEuler = this.makeEuler(orientationEuler);
-        this.communicator.updateUserDataAndTransmit({orientationEuler});
+        orientation = new Quaternion(orientation);
+        this.communicator.updateUserDataAndTransmit({orientation});
     }
     updateGain(hiFiGain) {
         if (this.shutdown) return;

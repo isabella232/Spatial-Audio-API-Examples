@@ -21,8 +21,9 @@
   "dependencies": {
     "audio-decode": "^1.4.0",
     "audio-format": "^2.3.2",
+    "esm": "^3.2.25",
     "gyp": "^0.5.0",
-    "hifi-spatial-audio": "*",
+    "hifi-spatial-audio": "^2.0.0",
     "jose": "^3.9.0",
     "make-fetch-happen": "^8.0.13",
     "node-fetch": "^2.6.1",
