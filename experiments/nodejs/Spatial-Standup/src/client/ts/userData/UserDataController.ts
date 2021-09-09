@@ -1,11 +1,11 @@
-import { OrientationEuler3D, Point3D } from "hifi-spatial-audio";
+import { Point3D, Quaternion } from "hifi-spatial-audio";
 import { userDataController, connectionController, roomController, physicsController, pathsController, uiController, twoDimensionalRenderer, webSocketConnectionController, watchPartyController, howlerController, uiThemeController, accessibilityController } from "..";
 import { VideoStreamingStates } from "../../../shared/shared";
 import { Path, Waypoint } from "../ai/PathsController";
 import { AVATAR, PHYSICS, UI } from "../constants/constants";
 import { chairSounds } from "../sounds/LocalSoundsController";
 import { SpatialAudioSeat, SpatialStandupRoom, SpatialStandupRoomType } from "../ui/RoomController";
-import { DataToTransmitToHiFi, EasingFunctions, Utilities } from "../utilities/Utilities";
+import { OrientationEuler3D, DataToTransmitToHiFi, EasingFunctions, Utilities } from "../utilities/Utilities";
 
 declare var HIFI_SPACE_NAME: string;
 declare var HIFI_PROVIDED_USER_ID: string;
@@ -68,7 +68,7 @@ export interface AvatarVelocity {
 class MyAvatar {
     myUserData: UserData;
     currentMode: MyAvatarModes;
-    linearVelocityMPerS: AvatarVelocity = {x: 0, z: 0, forward: 0, right: 0};
+    linearVelocityMPerS: AvatarVelocity = { x: 0, z: 0, forward: 0, right: 0 };
     rotationalVelocityDegreesPerS: number = 0;
 
     constructor() {
@@ -178,7 +178,7 @@ class MyAvatar {
             console.error(`\`positionSelfInRoom()\`: Couldn't determine current room!`);
             return;
         }
-        
+
         console.log(`Positioning self in room ${targetRoom.name}...`);
 
         let newSeat = targetRoom.getOptimalOpenSeat();
@@ -242,7 +242,7 @@ class MyAvatar {
             Object.assign(myUserData.positionCurrent, targetSeat.position);
             howlerController.onMyGlobalPositionChanged(myUserData.positionCurrent);
             myUserData.positionTarget = undefined;
-            
+
             dataToTransmit.position = myUserData.positionCurrent;
         }
         // We enter this case if this is the first time we're moving to a new seat.
@@ -253,10 +253,12 @@ class MyAvatar {
             howlerController.updateHowlerOrientation(myUserData.orientationEulerCurrent);
             myUserData.orientationEulerTarget = undefined;
 
-            dataToTransmit.orientationEuler = myUserData.orientationEulerCurrent;
+            dataToTransmit.orientation = Quaternion.fromEulerAngles({
+                yawDegrees: myUserData.orientationEulerCurrent.yawDegrees
+            });
         }
 
-        let isFirstMoveInNewSession = dataToTransmit.position || dataToTransmit.orientationEuler;
+        let isFirstMoveInNewSession = dataToTransmit.position || dataToTransmit.orientation;
 
         if (isFirstMoveInNewSession) {
             let hifiCommunicator = connectionController.hifiCommunicator;
@@ -267,7 +269,7 @@ class MyAvatar {
             }
             physicsController.autoComputePXPerMFromRoom(targetSeat.room);
         } else {
-            howlerController.playSound({ src: chairSounds[Math.floor(Math.random() * chairSounds.length)], randomSoundRate: true, positionM: myUserData.positionCurrent, tag: "environment"});
+            howlerController.playSound({ src: chairSounds[Math.floor(Math.random() * chairSounds.length)], randomSoundRate: true, positionM: myUserData.positionCurrent, tag: "environment" });
         }
 
         let currentRoom = myUserData.currentRoom;
@@ -318,18 +320,18 @@ class MyAvatar {
                 }, PHYSICS.PHYSICS_TICKRATE_MS);
             });
             if (currentRoom === targetRoom) {
-                let transitionCircleCenter = new Point3D({x: currentRoom.seatingCenter.x, z: currentRoom.seatingCenter.z});
+                let transitionCircleCenter = new Point3D({ x: currentRoom.seatingCenter.x, z: currentRoom.seatingCenter.z });
 
-                let orientationEulerInitial = new OrientationEuler3D({yawDegrees: myUserData.orientationEulerCurrent.yawDegrees});
-                let orientationEulerFinal = new OrientationEuler3D({yawDegrees: targetSeat.orientation.yawDegrees});
+                let orientationEulerInitial = new OrientationEuler3D({ yawDegrees: myUserData.orientationEulerCurrent.yawDegrees });
+                let orientationEulerFinal = new OrientationEuler3D({ yawDegrees: targetSeat.orientation.yawDegrees });
 
-                let step1PositionStart = new Point3D({x: myUserData.positionCurrent.x, z: myUserData.positionCurrent.z});
+                let step1PositionStart = new Point3D({ x: myUserData.positionCurrent.x, z: myUserData.positionCurrent.z });
                 let step1PositionTheta = Math.atan2(step1PositionStart.z - transitionCircleCenter.z, step1PositionStart.x - transitionCircleCenter.x);
                 let step1PositionEnd = new Point3D({
                     "x": (currentRoom.seatingRadiusM + AVATAR.RADIUS_M * 3) * Math.cos(step1PositionTheta) + transitionCircleCenter.x,
                     "z": (currentRoom.seatingRadiusM + AVATAR.RADIUS_M * 3) * Math.sin(step1PositionTheta) + transitionCircleCenter.z
                 });
-                let step3PositionEnd = new Point3D({x: targetSeat.position.x, z: targetSeat.position.z});
+                let step3PositionEnd = new Point3D({ x: targetSeat.position.x, z: targetSeat.position.z });
                 let step2PositionTheta = Math.atan2(step3PositionEnd.z - transitionCircleCenter.z, step3PositionEnd.x - transitionCircleCenter.x);
 
                 while (step1PositionTheta > step2PositionTheta) {
@@ -377,10 +379,10 @@ class MyAvatar {
                 newPath.onDeactivated.push(() => { physicsController.autoComputePXPerMFromRoom(targetRoom); })
 
                 newPath.pathWaypoints.push(new Waypoint({
-                    positionStart: new Point3D({x: myUserData.positionCurrent.x, z: myUserData.positionCurrent.z}),
-                    positionTarget: new Point3D({x: targetSeat.position.x, z: targetSeat.position.z}),
-                    orientationEulerStart: new OrientationEuler3D({yawDegrees: myUserData.orientationEulerCurrent.yawDegrees}),
-                    orientationEulerTarget: new OrientationEuler3D({yawDegrees: targetSeat.orientation.yawDegrees}),
+                    positionStart: new Point3D({ x: myUserData.positionCurrent.x, z: myUserData.positionCurrent.z }),
+                    positionTarget: new Point3D({ x: targetSeat.position.x, z: targetSeat.position.z }),
+                    orientationEulerStart: new OrientationEuler3D({ yawDegrees: myUserData.orientationEulerCurrent.yawDegrees }),
+                    orientationEulerTarget: new OrientationEuler3D({ yawDegrees: targetSeat.orientation.yawDegrees }),
                     durationMS: 2000,
                     easingFunction: EasingFunctions.easeOutQuad
                 }));
@@ -433,7 +435,7 @@ class MyAvatar {
 
         watchPartyController.leaveWatchParty();
         document.querySelector(".watchPartyControlsContainer").classList.add("displayNone");
-        
+
         roomController.updateRoomList();
     }
 
