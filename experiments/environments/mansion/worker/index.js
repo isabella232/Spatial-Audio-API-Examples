@@ -5,7 +5,7 @@ const path = require('path');
 const decode = require('audio-decode');
 const format = require('audio-format');
 const convert = require('pcm-convert');
-import { Point3D, HiFiLogger, HiFiLogLevel, HiFiAudioAPIData, HiFiCommunicator, preciseInterval } from 'hifi-spatial-audio';
+import { Point3D, Quaternion, HiFiLogger, HiFiLogLevel, HiFiAudioAPIData, HiFiCommunicator, preciseInterval } from 'hifi-spatial-audio';
 
 let MAP={};
 let AUDIO_BUFFERS = {}
@@ -111,7 +111,7 @@ class AudioWorker {
     sendPositionAndMove() {
         let response = this.hifiCommunicator.updateUserDataAndTransmit({
             position: this.position,
-            orientationEuler: { 'yawDegrees': this.currentJob.orientation}
+            orientation: HighFidelityAudio.Quaternion.fromEulerAngles({ yawDegrees: this.currentJob.orientation })
         });
         if (this.posDelta) {
             this.position.x += this.posDelta.x;

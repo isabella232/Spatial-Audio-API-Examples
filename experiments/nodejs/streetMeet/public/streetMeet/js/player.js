@@ -35,7 +35,7 @@ class SoundNode extends Renderable3D {
         super(config);
         // Create the API's position and orientation objects that will be sent to the mixer
         this.mixerPosition = new HighFidelityAudio.Point3D({ x: -this.position.x, y: this.position.z, z: -this.position.y });
-        this.mixerOrientation = new HighFidelityAudio.OrientationQuat3D(new THREE.Quaternion());
+        this.mixerOrientation = new HighFidelityAudio.Quaternion(new THREE.Quaternion());
         this.hifiCommunicator = null; // HighFidelityAudio.HiFiCommunicator
         this.stream = null; // Input or output stream
         this.type = SoundNodeType.NODE;

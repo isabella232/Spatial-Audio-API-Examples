@@ -62,6 +62,8 @@ function generateAgoraAccessToken(providedUserID, spaceName) {
     return RtcTokenBuilder.buildTokenWithAccount(appID, appCertificate, channelName, account, role, privilegeExpiredTs);
 }
 
+app.use(express.static('static'));
+
 let spaceNameToIDMap = new Map();
 app.get('/videochat-agora', async (req, res) => {
     let spaceName = req.query.superSecretRoomNameParam || auth.AGORA_DEFAULT_CHANNEL_NAME;

@@ -67,6 +67,8 @@ function generateTwilioAccessToken(providedUserID, spaceName) {
     return accessToken.toJwt();
 }
 
+app.use(express.static('static'));
+
 let spaceNameToIDMap = new Map();
 app.get('/videochat-twilio', async (req, res) => {
     let spaceName = req.query.superSecretRoomNameParam || auth.TWILIO_ROOM_NAME;

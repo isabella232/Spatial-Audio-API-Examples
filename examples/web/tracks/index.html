@@ -15,15 +15,19 @@
     <canvas class="thecanvas" style="position:fixed; right: 0; top: 0;"></canvas>
     <p class="example-description" style="position: fixed; left: 0; width: 100%; text-align: center;">Click the connect button to setup the audio nodes.<br>Move the nodes around to perceive spatialization</p>
     <button class="triggerButton" style="cursor: pointer; font-size: 18px; background-color: #000000; color: white; width: 280px; top: 0; left: 0; height: 60px; margin: 0; position: fixed;"></button>
-    <script src="https://hifi-spatial-audio-api.s3-us-west-2.amazonaws.com/releases/latest/HighFidelityAudio-latest.js"></script>
-    <script src="https://hifi-spatial-audio-api.s3-us-west-2.amazonaws.com/releases/latest/HighFidelityControls-latest.js"></script>
+    <script src="./HighFidelityAudio-6b60dcf.js"></script>
+    <script src="./HighFidelityControls-6b60dcf.js"></script>
     <script>
         // Conversion constant since we use radians to draw on the canvas but we are setting degrees on the API 
         const RADIANS_TO_DEGREES = 57.2958;
         // Connect to the High Fidelity Audio Spatial API Server by supplying your own JWT here.
         // Follow this guide to get a JWT: https://www.highfidelity.com/api/guides/misc/getAJWT
-        // If you don't need a guide, obtain JWT credentials after signing up for a developer account at https://account.highfidelity.com/dev/account
-        const HIFI_AUDIO_JWT = "";
+        // If you don't need a guide, obtain JWT credentials after signing up for a developer account at https://account.highfidelity.com/dev/account        
+        let HiFiAudioJWT;
+        let searchParams = new URLSearchParams(location.search);
+        if (!HiFiAudioJWT && searchParams.get("jwt")) {
+            HiFiAudioJWT = searchParams.get("jwt");
+        }
         
         const SoundNodeType = {
             NODE: 0, // Basic node
@@ -130,7 +134,7 @@
                 super(config);
                 // Create the API's position and orientation objects that will be sent to the mixer
                 this.mixerPosition = new HighFidelityAudio.Point3D({ x: -this.position.x, y: this.position.z, z: -this.position.y });
-                this.mixerOrientation = new HighFidelityAudio.OrientationEuler3D({ "pitchDegrees": 0, "yawDegrees": -RADIANS_TO_DEGREES * this.orientation, "rollDegrees": 0 });
+                this.mixerOrientation = HighFidelityAudio.Quaternion.fromEulerAngles({ "pitchDegrees": 0, "yawDegrees": -RADIANS_TO_DEGREES * this.orientation, "rollDegrees": 0 });
                 this.hifiCommunicator = null; // HighFidelityAudio.HiFiCommunicator
                 this.stream = null; // Input or output stream
                 this.type = SoundNodeType.NODE;
@@ -147,7 +151,7 @@
                 this.mixerPosition.x = -this.position.x;
                 this.mixerPosition.y = this.position.z;
                 this.mixerPosition.z = -this.position.y;
-                this.mixerOrientation.yawDegrees = -RADIANS_TO_DEGREES * this.orientation;
+                this.mixerOrientation = HighFidelityAudio.Quaternion.fromEulerAngles({ "pitchDegrees": 0, "yawDegrees": -RADIANS_TO_DEGREES * this.orientation, "rollDegrees": 0 });
                 this.sendUpdatedData();
             }
             // Send the converted position and orientation to the mixer
@@ -155,7 +159,7 @@
                 if (this.hifiCommunicator) {
                     let response = this.hifiCommunicator.updateUserDataAndTransmit({
                         position: this.mixerPosition,
-                        orientationEuler: this.mixerOrientation
+                        orientation: this.mixerOrientation
                     });
                 }
             }
@@ -175,7 +179,7 @@
                 this.hifiCommunicator = new HighFidelityAudio.HiFiCommunicator({
                     initialHiFiAudioAPIData: new HighFidelityAudio.HiFiAudioAPIData({
                         position: this.mixerPosition,
-                        orientationEuler: this.mixerOrientation
+                        orientation: this.mixerOrientation
                     }),
                     onConnectionStateChanged: this.onConnectionStateChanged.bind(this), // Subscribe to connection changes
                 });
@@ -184,7 +188,7 @@
                 }
                 try {
                     let stackURLOverride = new URLSearchParams(location.search).get("stack");
-                    this.connectResponse = await this.hifiCommunicator.connectToHiFiAudioAPIServer(HIFI_AUDIO_JWT, stackURLOverride);
+                    this.connectResponse = await this.hifiCommunicator.connectToHiFiAudioAPIServer(HiFiAudioJWT, stackURLOverride);
                     console.log(`Call to \`connectToHiFiAudioAPIServer()\` for: ${this.name} succeeded! Response:\n${JSON.stringify(this.connectResponse)}`);
                     return this.connectResponse.success;
                 } catch (e) {

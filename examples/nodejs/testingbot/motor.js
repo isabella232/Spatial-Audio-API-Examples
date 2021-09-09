@@ -1,7 +1,7 @@
 'use strict';
 
 const { degreesBetween, project } = require("./vectors");
-import { HiFiConstants } from "hifi-spatial-audio";
+import { HiFiConstants, Quaternion } from "hifi-spatial-audio";
 
 class Motor {
     constructor({bot, start, updatePeriodMs = HiFiConstants.DEFAULT_TRANSMIT_RATE_LIMIT_TIMEOUT_MS}) {
@@ -34,19 +34,21 @@ class Motor {
     }
     rotateForward(direction) {
         // We could smoothly rotate this ast some rotational speed, but no requirement to do so just yet.
-        let orientationEuler = {}, normal;
+        let quaternion, normal;
         // FIXME: how do we test this?
         // E.g., that start is measured from the given axis, about the given, and not reversed like above?
 
         normal = {x:1, y:0, z:0};
-        orientationEuler.pitchDegrees = degreesBetween({x:0, y:0, z:-1}, direction, normal);
+        let pitchDegrees = degreesBetween({x:0, y:0, z:-1}, direction, normal);
 
         normal = {x:0, y: 1, z:0};
-        orientationEuler.yawDegrees = degreesBetween({x:0, y:0, z:-1}, direction, normal);
+        let yawDegrees = degreesBetween({x:0, y:0, z:-1}, direction, normal);
+
+        quaternion = Quaternion.fromEulerAngles({ yawDegrees, pitchDegrees });
 
         // Bots are always "upright" wrt roll.
 
-        this.bot.updateOrientation(orientationEuler);
+        this.bot.updateOrientation(quaternion);
     }
 }
 module.exports = Motor;

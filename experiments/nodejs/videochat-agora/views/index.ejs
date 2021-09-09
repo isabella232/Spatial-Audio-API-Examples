@@ -72,7 +72,7 @@
     </div>
 </body>
 
-<script src="https://hifi-spatial-audio-api.s3.amazonaws.com/releases/latest/HighFidelityAudio-latest.js"></script>
+<script src="/HighFidelityAudio-6b60dcf.js"></script>
 <script>
     let connectDisconnectButton = document.querySelector('.connectDisconnectButton');
     connectDisconnectButton.addEventListener("click", connectToHiFiAndVideoService);
@@ -95,7 +95,7 @@
             (factor - minInput) / (maxInput - minInput);
     }
 
-    const FORWARD_ORIENTATION = new HighFidelityAudio.OrientationEuler3D({ "pitchDegrees": 0, "yawDegrees": 0, "rollDegrees": 0 });
+    const FORWARD_ORIENTATION = new HighFidelityAudio.Quaternion();
     let possiblePositions = [];
     function updatePositions() {
         if (!hifiCommunicator) {
@@ -156,7 +156,7 @@
 
         console.log(hifiCommunicator.updateUserDataAndTransmit({
             position: myPosition,
-            orientationEuler: FORWARD_ORIENTATION,
+            orientation: FORWARD_ORIENTATION,
         }));
 
         let videoContainerWidth = videoContainer.offsetWidth;
@@ -239,7 +239,7 @@
         // They'll be standing at the origin, facing "forward".
         let initialHiFiAudioAPIData = new HighFidelityAudio.HiFiAudioAPIData({
             position: new HighFidelityAudio.Point3D({ "x": 0, "y": 0, "z": 0 }),
-            orientationEuler: new HighFidelityAudio.OrientationEuler3D({ "pitchDegrees": 0, "yawDegrees": 0, "rollDegrees": 0 })
+            orientation: new HighFidelityAudio.Quaternion()
         });
 
         HighFidelityAudio.HiFiLogger.setHiFiLogLevel(HighFidelityAudio.HiFiLogLevel.Debug);
@@ -284,7 +284,7 @@
             // Setting `providedUserID` to `null` (or omitting it) means we will get data updates from **all** connected Users, including ourselves.
             "providedUserID": null,
             // There are other components we could subscribe to here, but we're only subscribing to Volume data updates.
-            "components": [HighFidelityAudio.AvailableUserDataSubscriptionComponents.Position, HighFidelityAudio.AvailableUserDataSubscriptionComponents.OrientationEuler],
+            "components": [HighFidelityAudio.AvailableUserDataSubscriptionComponents.Position, HighFidelityAudio.AvailableUserDataSubscriptionComponents.Orientation],
             // See above for the definition of `onNewHiFiUserDataReceived`.
             "callback": onNewHiFiUserDataReceived
         });

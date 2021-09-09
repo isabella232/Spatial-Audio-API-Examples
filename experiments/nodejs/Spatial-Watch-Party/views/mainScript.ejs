@@ -42,7 +42,7 @@
         return virtualSpaceDimensions;
     }
 
-    const FORWARD_ORIENTATION = new HighFidelityAudio.OrientationEuler3D({ "pitchDegrees": 0, "yawDegrees": 0, "rollDegrees": 0 });
+    const FORWARD_ORIENTATION = new HighFidelityAudio.Quaternion();
     function updateMyPosition(targetPosition, alsoUpdateContainerPositions = true) {
         if (!hifiCommunicator || !targetPosition) {
             return;
@@ -66,7 +66,7 @@
 
         hifiCommunicator.updateUserDataAndTransmit({
             position: myUserData.position,
-            orientationEuler: FORWARD_ORIENTATION,
+            orientation: FORWARD_ORIENTATION,
         });
 
         if (alsoUpdateContainerPositions) {
@@ -199,7 +199,7 @@
         // They'll be standing at the origin, facing "forward".
         let initialHiFiAudioAPIData = new HighFidelityAudio.HiFiAudioAPIData({
             position: new HighFidelityAudio.Point3D({ "x": 0, "y": 0, "z": 0 }),
-            orientationEuler: new HighFidelityAudio.OrientationEuler3D({ "pitch": 0, "yaw": 0, "roll": 0 })
+            orientation: new HighFidelityAudio.Quaternion()
         });
 
         HighFidelityAudio.HiFiLogger.setHiFiLogLevel(HighFidelityAudio.HiFiLogLevel.Debug);
@@ -262,7 +262,7 @@
             // Setting `providedUserID` to `null` (or omitting it) means we will get data updates from **all** connected Users, including ourselves.
             "providedUserID": null,
             // There are other components we could subscribe to here, but we're only subscribing to Volume data updates.
-            "components": [HighFidelityAudio.AvailableUserDataSubscriptionComponents.Position, HighFidelityAudio.AvailableUserDataSubscriptionComponents.OrientationEuler],
+            "components": [HighFidelityAudio.AvailableUserDataSubscriptionComponents.Position, HighFidelityAudio.AvailableUserDataSubscriptionComponents.Orientation],
             // See above for the definition of `onNewHiFiUserDataReceived`.
             "callback": onNewHiFiUserDataReceived
         });

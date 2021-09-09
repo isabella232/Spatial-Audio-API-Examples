@@ -2,25 +2,39 @@
 @use "./themes";
 
 .signalButtonContainer {
-    position: fixed;
-    top: 0;
-    right: 0;
-    margin: 4px;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    -ms-box-sizing: border-box;
-    box-sizing: border-box;
     display: flex;
-    flex-direction: column;
-    z-index: map-get(z-indices.$z-index, ui);
+    flex-wrap: wrap;
+    background: rgba(255, 255, 255, 0.9);
+    position: fixed;
+    top: 48px;
+    right: 0;
+    z-index: map-get(z-indices.$z-index, belowHamburger);
+    align-items: center;
+    justify-content: flex-end;
+    padding: 8px;
+    
+    width: auto;
+    max-width: 352px;
+    
+    border-radius: 0 0 0 5px;
 }
 
 .signalButton {
     border: none;
     cursor: pointer;
     pointer-events: all;
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 36px;
+    margin: 2px;
+
+    &:hover {
+        border-radius: 4px;
+        background-color: #B9BBBE;
+    }
 }
 
 .signalButton:focus-visible {
@@ -28,22 +42,73 @@
     border-radius: 4px;
 }
 
-.signalButton--positive {
-    background: url('../images/starBubble.png') transparent no-repeat center center;
+.signalButton--smile {
+    background-image: url('../images/signals/smile.png');
 }
 
-.signalButton--negative {
-    background: url('../images/redLineBubble.png') transparent no-repeat center center;
+.signalButton--handRaised {
+    background-image: url('../images/signals/handRaised.png');
 }
 
-.signalButton--active {
-    border-radius: 4px;
+.signalButton--clap {
+    background-image: url('../images/signals/clap.png');
+}
 
-    &--light-theme {
-        background-color: map-get(themes.$light-theme, active-signal-button-background);
+.signalButton--party {
+    background-image: url('../images/signals/party.png');
+}
+
+.signalButton--heart {
+    background-image: url('../images/signals/heart.png');
+}
+
+.signalButton--joy {
+    background-image: url('../images/signals/joy.png');
+}
+
+.signalButton--interrobang {
+    background-image: url('../images/signals/interrobang.png');
+}
+
+.signalButton--noEntry {
+    background-image: url('../images/signals/noEntry.png');
+}
+
+.topRightSignalButtonContainer {
+    margin: 0 12px 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggleSignalButtonContainerButton {
+    border: none;
+    cursor: pointer;
+    pointer-events: all;
+    width: 28px;
+    height: 28px;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+
+    &--closed {
+        background-image: url('../images/icons/light-theme/toggleSignalButtonContainerButton-closed-light.svg');
     }
 
-    &--dark-theme {
-        background-color: map-get(themes.$dark-theme, active-signal-button-background);
+    &--open {
+        background-image: url('../images/icons/light-theme/toggleSignalButtonContainerButton-open-light.svg');
     }
+}
+
+.toggleSoundsContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 8px 0 0 0;
+}
+
+.toggleSoundsCheckboxLabel {
+    margin: 0 8px 0 0;
 }

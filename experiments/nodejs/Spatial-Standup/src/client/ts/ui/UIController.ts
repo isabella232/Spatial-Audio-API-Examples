@@ -1,4 +1,4 @@
-import { accessibilityController, connectionController, physicsController, roomController, s3Controller, twoDimensionalRenderer, uiThemeController, userDataController, userInputController, videoController, webSocketConnectionController } from '..';
+import { accessibilityController, connectionController, physicsController, roomController, s3Controller, signalsController, twoDimensionalRenderer, uiThemeController, userDataController, userInputController, videoController, webSocketConnectionController } from '..';
 import '../../css/controls.scss';
 import { AudionetInitResponse } from '../connection/ConnectionController';
 import { UserData } from '../userData/UserDataController';
@@ -152,11 +152,6 @@ export class UIController {
         toggleInputMuteButton.classList.add("bottomControlButton", "toggleInputMuteButton", "toggleInputMuteButton--unmuted");
         bottomControlsContainer.appendChild(toggleInputMuteButton);
 
-        let toggleOutputMuteButton = document.createElement("button");
-        toggleOutputMuteButton.setAttribute("aria-label", "Headphones are unmuted. Click to mute your headphones.");
-        toggleOutputMuteButton.classList.add("bottomControlButton", "toggleOutputMuteButton", "toggleOutputMuteButton--unmuted");
-        bottomControlsContainer.appendChild(toggleOutputMuteButton);
-
         let toggleVideoButton = document.createElement("button");
         toggleVideoButton.setAttribute("aria-label", "Camera is disabled. Click to enable your camera.");
         toggleVideoButton.classList.add("bottomControlButton", "toggleVideoButton", "toggleVideoButton--muted");
@@ -251,8 +246,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
 
         let ftueInnerContainer__okButton = document.createElement("button");
         ftueInnerContainer__okButton.classList.add("ftueInnerContainer__okButton");
-        ftueInnerContainer__okButton.setAttribute("aria-label", "OK"); 
-        ftueInnerContainer__okButton.setAttribute("aria-labelledby", "ftueInnerContainer__text"); 
+        ftueInnerContainer__okButton.setAttribute("aria-label", "Click here to continue."); 
         ftueInnerContainer__okButton.innerHTML = `OK, thanks!`;
         ftueInnerContainer__okButton.addEventListener("click", (e) => {
             this.showMainUI();
@@ -376,7 +370,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
         let openKeyboardShortcutsContainer = document.createElement("div");
         openKeyboardShortcutsContainer.classList.add("bottomRightControlContainer", "openKeyboardShortcutsContainer");
         let openKeyboardShortcutsText = document.createElement("span");
-        openKeyboardShortcutsText.classList.add("bottomRightControlText", "displayNone");
+        openKeyboardShortcutsText.classList.add("bottomRightControlText", "bottomRightControlText__showKeyboardShortcuts", "displayNone");
         openKeyboardShortcutsText.innerHTML = "Show Keyboard Shortcuts";
         openKeyboardShortcutsContainer.appendChild(openKeyboardShortcutsText);
         let showKeyboardShortcutsButton = document.createElement("button");
@@ -431,6 +425,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
                 "Close Dialog": [
                     {"innerHTML": "ESC", "aria-label": "Escape Key"}
                 ],
+                "Toggle Emoji Picker": ["E"],
                 "Show Keyboard Shortcuts": [
                     {"innerHTML": "?", "aria-label": "Question Mark"}
                 ],
@@ -572,6 +567,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
         if (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash) {
             displayName = document.createElement("input");
             displayName.classList.add("avatarContextMenu__displayName", "avatarContextMenu__displayName--mine");
+            displayName.setAttribute("aria-label", "Edit Your Username");
             displayName.type = "text";
             displayName.value = userData.displayName;
 
@@ -773,7 +769,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
     }
 
     generateEchoCancellationUI(userData: UserData) {
-        if (typeof (userData.echoCancellationEnabled) !== "boolean" || (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash && !(typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().echoCancellation))) {
+        if (typeof (userData.echoCancellationEnabled) !== "boolean" || !userData.echoCancellationAvailable || (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash && !(typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().echoCancellation))) {
             return;
         }
 
@@ -817,7 +813,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
     }
 
     generateAGCUI(userData: UserData) {
-        if (typeof (userData.agcEnabled) !== "boolean" || (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash && !(typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().autoGainControl))) {
+        if (typeof (userData.agcEnabled) !== "boolean" || !userData.agcAvailable || (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash && !(typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().autoGainControl))) {
             return;
         }
 
@@ -861,7 +857,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
     }
 
     generateNoiseSuppressionUI(userData: UserData) {
-        if (typeof (userData.noiseSuppressionEnabled) !== "boolean" || (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash && !(typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().noiseSuppression))) {
+        if (typeof (userData.noiseSuppressionEnabled) !== "boolean" || !userData.noiseSuppressionAvailable || (userData.visitIDHash === userDataController.myAvatar.myUserData.visitIDHash && !(typeof (navigator) !== "undefined" && typeof (navigator.mediaDevices) !== "undefined" && typeof (navigator.mediaDevices.getSupportedConstraints) !== "undefined" && navigator.mediaDevices.getSupportedConstraints().noiseSuppression))) {
             return;
         }
 
@@ -1253,6 +1249,7 @@ ftueInnerContainer.appendChild(ftueInnerContainer__text);
 
     showAvatarContextMenu(userData: UserData) {
         roomController.hideRoomList();
+        signalsController.hideSignalContainer();
 
         let topBar = document.querySelector(".topBar");
         if (topBar) {

@@ -104,6 +104,8 @@ async function generateDailyJWT(providedUserID, spaceName) {
     */
 }
 
+app.use(express.static('static'));
+
 let spaceNameToIDMap = new Map();
 app.get('/videochat-daily', async (req, res) => {
     let spaceName = auth.DAILY_DEFAULT_ROOM_NAME;

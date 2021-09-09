@@ -54,7 +54,7 @@
         </div>
     </body>
 
-    <script src="https://hifi-spatial-audio-api.s3-us-west-2.amazonaws.com/releases/latest/HighFidelityAudio-latest.js?1"></script>
+    <script src="./HighFidelityAudio-6b60dcf.js"></script>
     <script>
         // We use this to change the text of the "Connect" button to "Connected", and to disable that button after clicking it.
         let statusDisplay = document.querySelector('.statusDisplay');
@@ -79,7 +79,7 @@
         class PeerData {
             constructor() {
                 this.position = new HighFidelityAudio.Point3D({ 'x': 0, 'y': 0, 'z': 0 });
-                this.orientationEuler = new HighFidelityAudio.OrientationEuler3D({ 'pitchDegrees': 0, 'yawDegrees': 0, 'rollDegrees': 0 });
+                this.orientation = new HighFidelityAudio.Quaternion();
             }
         }
         
@@ -87,7 +87,7 @@
         
             constructor() {
                 this.position = new HighFidelityAudio.Point3D({ 'x': 0, 'y': 0, 'z': 0 });
-                this.orientationEuler = new HighFidelityAudio.OrientationEuler3D({ 'pitchDegrees': 0, 'yawDegrees': 0, 'rollDegrees': 0 });
+                this.orientation = new HighFidelityAudio.Quaternion();
                 this.positionVelocity = { 'lat': 0, 'long': 0 };
                 this.yawVelocity = 0;
                 this.stepsBufferNode;
@@ -101,9 +101,9 @@
                 let now = d.getTime();
                 let deltaTime = (now - this.lastCompute) / 1000;
                 this.lastCompute = now;
-                this.orientationEuler.yawDegrees = this.orientationEuler.yawDegrees + deltaTime * this.yawVelocity;                     
+                this.orientation = HighFidelityAudio.Quaternion.multiply(this.orientation, HighFidelityAudio.Quaternion.fromEulerAngles({ yawDegrees: deltaTime * this.yawVelocity }));   
 
-                let yawRad = this.orientationEuler.yawDegrees*Math.PI/180;
+                let yawRad = this.orientation.getEulerAngles().yawDegrees * Math.PI / 180;
                 let XvelocityMpS = this.positionVelocity.lat * Math.cos(-yawRad) - this.positionVelocity.long * Math.sin(-yawRad);
                 let ZvelocityMpS = this.positionVelocity.lat * Math.sin(-yawRad) + this.positionVelocity.long * Math.cos(-yawRad);
 
@@ -126,7 +126,7 @@
 
                 let response = hifiCommunicator.updateUserDataAndTransmit({
                     position: this.position,
-                    orientationEuler: this.orientationEuler
+                    orientation: this.orientation
                 });                
             }
         }
@@ -138,7 +138,7 @@
             centerY = mapCanvas.height/2;
             ctx.save();
             ctx.translate(centerX, centerY);            
-            ctx.rotate(-player.orientationEuler.yawDegrees*Math.PI/180);
+            ctx.rotate(-player.orientation.getEulerAngles().yawDegrees*Math.PI/180);
             ctx.translate(-centerX, -centerY);
             ctx.translate(-(PIXELS_PER_METER*player.position.x), (PIXELS_PER_METER*player.position.z));            
             ctx.strokeStyle = 'black';         
@@ -163,11 +163,11 @@
             ctx.restore();            
         }
 
-        function drawPlayer(color, position, orientationEuler) {
+        function drawPlayer(color, position, orientation) {
             let ctx = mapCanvas.getContext('2d');
             ctx.save();
             ctx.translate(centerX, centerY);            
-            ctx.rotate(-player.orientationEuler.yawDegrees*Math.PI/180);
+            ctx.rotate(-player.orientation.getEulerAngles().yawDegrees*Math.PI/180);
             ctx.translate(-centerX, -centerY);
             ctx.translate(-(PIXELS_PER_METER*player.position.x), (PIXELS_PER_METER*player.position.z)); 
             
@@ -180,7 +180,7 @@
 
             ctx.fillStyle = color;
             ctx.fill();
-            let yawRad = (orientationEuler.yawDegrees - 90)*Math.PI/180;
+            let yawRad = (orientation.getEulerAngles().yawDegrees - 90)*Math.PI/180;
             ctx.beginPath();
             ctx.lineWidth = PIXELS_PER_METER/2;
             var grd = ctx.createRadialGradient(centerX + PIXELS_PER_METER * position.x, 
@@ -205,7 +205,7 @@
             for( const [id, peer] of Object.entries(peers)) {
                 // don't draw workers.
                 if (peer.providedUserID !== 'worker') {
-                    drawPlayer('blue', peer.position, peer.orientationEuler);
+                    drawPlayer('blue', peer.position, peer.orientation);
                 }
             }
         }
@@ -325,7 +325,7 @@
                 // They'll be standing at the origin, facing "forward".
                 let initialHiFiAudioAPIData = new HighFidelityAudio.HiFiAudioAPIData({
                     position: new HighFidelityAudio.Point3D({ 'x': 0, 'y': 0, 'z': 0 }),
-                    orientationEuler: new HighFidelityAudio.OrientationEuler3D({ 'pitch': 0, 'yaw': 0, 'roll': 0 })
+                    orientation: new HighFidelityAudio.Quaternion()
                 });
 
                 // Set up our `HiFiCommunicator` object, supplying our media stream and initial user data.
@@ -339,10 +339,14 @@
                 hifiCommunicator.setInputAudioMediaStream(audioMediaStream).then(() => {
 
                     // Connect to the HiFi Audio API server!
-                    // Supply your own JWT here.
-                    const HIFI_AUDIO_JWT = "";
-
-                    hifiCommunicator.connectToHiFiAudioAPIServer(HIFI_AUDIO_JWT).
+                    // Supply your own JWT here, or use a "jwt" query parameter.
+                    let HiFiAudioJWT;
+                    let searchParams = new URLSearchParams(location.search);
+                    if (!HiFiAudioJWT && searchParams.get("jwt")) {
+                        HiFiAudioJWT = searchParams.get("jwt");
+                    }
+                    let stackURLOverride = searchParams.get("stack");
+                    hifiCommunicator.connectToHiFiAudioAPIServer(HiFiAudioJWT, stackURLOverride).
                     catch (e => {
                         console.error(`Error connecting to High Fidelity:\n${e}`);
                         statusDisplay.innerHTML = 'Connection error. Retry?';
@@ -498,17 +502,18 @@
                     if (peer.position.y !== null) { peers[peer.hashedVisitID].position.y = peer.position.y; }
                     if (peer.position.z !== null) { peers[peer.hashedVisitID].position.z = peer.position.z; }
                 }
-                if (peer.orientationEuler !== null) {
-                    if (peer.orientationEuler.yawDegrees !== null) { peers[peer.hashedVisitID].orientationEuler.yawDegrees = peer.orientationEuler.yawDegrees; }
-                    if (peer.orientationEuler.pitchDegrees !== null) { peers[peer.hashedVisitID].orientationEuler.pitchDegrees = peer.orientationEuler.pitchDegrees; }
-                    if (peer.orientationEuler.rollDegrees !== null) { peers[peer.hashedVisitID].orientationEuler.rollDegrees = peer.orientationEuler.rollDegrees; }
+                if (peer.orientation !== null) {
+                    if (peer.orientation.x !== null) { peers[peer.hashedVisitID].orientation.x = peer.orientation.x; }
+                    if (peer.orientation.y !== null) { peers[peer.hashedVisitID].orientation.y = peer.orientation.y; }
+                    if (peer.orientation.z !== null) { peers[peer.hashedVisitID].orientation.z = peer.orientation.z; }
+                    if (peer.orientation.w !== null) { peers[peer.hashedVisitID].orientation.w = peer.orientation.w; }
                 }             
             });
         }
         
         function mainLoop(hifiCommunicator) {
             drawMap();
-            drawPlayer('green', player.position, player.orientationEuler);
+            drawPlayer('green', player.position, player.orientation);
             drawPeers();
             drawFogOfWar();
             drawInstructions();
@@ -541,7 +546,7 @@
             document.addEventListener('keyup', onUserKeyUp, false);
             let userDataSubscription = new HighFidelityAudio.UserDataSubscription({
                 'components': [ HighFidelityAudio.AvailableUserDataSubscriptionComponents.Position,
-                                HighFidelityAudio.AvailableUserDataSubscriptionComponents.OrientationEuler ],
+                                HighFidelityAudio.AvailableUserDataSubscriptionComponents.Orientation ],
                 'callback': (data) => { updatePeers(data); }
             });
             hifiCommunicator.addUserDataSubscription(userDataSubscription);
